@@ -1,3 +1,5 @@
+from future.utils import viewitems
+
 # Python imports
 from argparse import ArgumentParser, ArgumentTypeError
 import logging
@@ -106,22 +108,24 @@ def _process_value(value):
         value = value.replace(u'\u2019', "'")
         value = value.replace(u'\u201c', '"')
         value = value.replace(u'\u201d', '"')
-        result = value.encode('utf-8', 'ignore')
+        result = value
     except AttributeError:
+        LOGGER.exception("Attribute error encountered for: [%s]", value)
         if value is None:
             LOGGER.debug("Value '%s' can not be utf-8 encoded", value)
         elif isinstance(value, int):
             result = str(value)
 
-    result = result.strip()
-    result = result.replace('\n', ',  ')
-    result = result.replace("'", "''")
-    result = result.strip()
+    if result:
+        result = result.strip()
+        result = result.replace('\n', ',  ')
+        result = result.replace("'", "''")
+        result = result.strip()
 
-    if result.lower() == 'yes':
-        return True
-    elif result.lower() == 'no':
-        return False
+        if result.lower() == 'yes':
+            return True
+        elif result.lower() == 'no':
+            return False
 
     return result
 
@@ -170,13 +174,13 @@ def write_yaml_file(filepath, fields, value_dict, sequence_name, index):
     with open(filepath, 'w') as yaml:
         yaml.write('transformations:\n')
         yaml.write('  - \n    ' + sequence_name + ':\n')
-        for key, value in value_dict.iteritems():
+        for key, value in viewitems(value_dict):
             key = _process_value(key)
             if key is None or key.isspace() or not key:
                 continue
             yaml.write('      - \n')   # marks this as a sequence
             yaml.write('        ' + fields[index] + ":  '" + key + "'\n")
-            for sub_key, sub_value in value.iteritems():
+            for sub_key, sub_value in viewitems(value):
                 yaml.write('        ' + sub_key + ':  ')
                 if len(sub_value) > 1:  # more than one item, write an array/seq
                     yaml.write('\n')

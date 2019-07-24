@@ -9,6 +9,7 @@ from string import ascii_uppercase
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from google.oauth2 import service_account
 
 # Project imports
 
@@ -36,20 +37,29 @@ def add_console_logging():
 def create_drive_credentials(key_filepath):
     creds = None
 
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
+    try:
+        # use service account credentials if they exist
+        creds = service_account.Credentials.from_service_account_file(
+            key_filepath, scopes=SCOPES)
+    except ValueError:
+        # service account creds aren't being used.  try loading from a stored
+        # token file
+        if os.path.exists('token.pickle'):
+            with open('token.pickle', 'rb') as token:
+                creds = pickle.load(token)
 
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                key_filepath, SCOPES
-            )
-            creds = flow.run_local_server()
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
+        # create oauth tokens if credentials are not valid
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                # forces a login screen in a web browser
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    key_filepath, SCOPES
+                )
+                creds = flow.run_local_server()
+            with open('token.pickle', 'wb') as token:
+                pickle.dump(creds, token)
 
     return creds
 
@@ -76,26 +86,6 @@ def read_sheet_values(service, args):
     values = result.get('values', [])
 
     return values
-
-
-def _process_value(value):
-    result = None
-    try:
-        value = value.replace(u'\u00AD', '-')
-        value = value.replace(u'\u2010', '-')
-        value = value.replace(u'\u2019', "'")
-        value = value.replace(u'\u201c', '"')
-        value = value.replace(u'\u201d', '"')
-        result = value.encode('utf-8', 'ignore')
-    except AttributeError:
-        if value is None:
-            LOGGER.debug("Value '%s' can not be utf-8 encoded", value)
-        elif isinstance(value, int):
-            result = str(value)
-
-    result = result.replace('\n', '\n  ')
-    result = result.strip()
-    return result
 
 
 def _process_field_names(name_list):
@@ -248,7 +238,7 @@ def _parse_command_line():
             'Google Drive files.'
         )
     )
-    parser.add_argument('key_file', type=file, action='store',
+    parser.add_argument('key_file', action='store',
                         help='Filepath to your service account or client secret key')
     parser.add_argument('spreadsheet_id', action='store',
                         help='Google spreadsheet ID (as seen in URL)')
@@ -281,7 +271,7 @@ def main():
     add_console_logging()
     args = _parse_command_line()
     args.column_id = _ascii_to_index(args.column_id)
-    credentials = create_drive_credentials(args.key_file.name)
+    credentials = create_drive_credentials(args.key_file)
     service = create_spreadsheets_service(credentials)
     values = read_sheet_values(service, args)
 

@@ -1,0 +1,96 @@
+transformations: list(include('available_field'), include('change_logs'),
+                      include('concept_generalization'), include('concept_suppression'),
+                      include('field_generalization'), include('field_suppression'),
+                      include('table_suppression'))
+
+---
+available_field:
+    available_fields: list(include('available_field_item'))
+
+change_logs:
+    change_log: list(include('change_item_dict'))
+
+concept_generalization:
+    concept_generalizations: list(include('concept_gen_item'))
+
+concept_suppression:
+    concept_suppressions: list(include('concept_sup_item'))
+
+field_generalization:
+    field_generalizations: list(include('field_item'))
+
+field_suppression:
+    field_suppressions: list(include('field_item'))
+
+table_suppression:
+    table_suppressions: list(include('table_sup_item'))
+
+available_field_item:
+    field_name: any(list(str()), str(), null())
+    relevant_omop_table: any(list(str()), str(), null())
+    omop_cdm_standard_or_custom_field: any(list(str()), str(), null())
+    description: any(list(str()), str(), null())
+    field_type: any(list(str()), str(), null())
+    data_provenance: any(list(str()), str(), null())
+    source_ppi_module: any(list(str()), str(), null())
+    transformed_by_registered_tier_privacy_methods: any(bool(), null())
+
+concept_sup_item:
+    concept_id: any(list(int()), int(), null())
+    relevant_omop_table: any(list(str()), str(), null())
+    field_name: any(list(str()), str(), null())
+    concept_name: any(list(str()), str(), null())
+    data_provenance: any(list(str()), str(), null())
+    source_ppi_module: any(list(str()), str(), null())
+    transformation_applied_in_registered_tier: any(list(str()), str(), null())
+    transformed_by_registered_tier_privacy_methods: any(bool(), null(), required=False)
+    privacy_output_in_registered_tier: any(list(str()), str(), null())
+    additional_notes: any(list(str()), str(), null(), required=False)
+
+concept_gen_item:
+    concept_id: any(list(int()), int(), null())
+    relevant_omop_table: any(list(str()), str(), null())
+    field_name: any(list(str()), str(), null())
+    concept_name: any(list(str()), str(), null())
+    data_provenance: any(list(str()), str(), null())
+    source_ppi_module: any(list(str()), str(), null())
+    transformed_by_registered_tier_privacy_methods: any(bool(), null(), required=False)
+    registered_tier_transformation_description: any(list(str()), str(), null())
+    fields_affected: any(list(str()), str(), null(), required=False)
+    input_concept_id: any(list(int()), int(), null(), required=False)
+    input_concept_name: any(list(str()), str(), null(), required=False)
+    generalized_output_concept_id: any(list(int()), int(), null(), required=False)
+    generalized_output_concept_name: any(list(str()), str(), null(), required=False)
+    additional_notes: any(list(str()), str(), null(), required=False)
+    transformed_by_controlled_tier_privacy_methods: any(bool(), null(), required=False)                   #  not found in updated lists
+    transformation_applied_in_controlled_tier: any(list(str()), str(), null(), required=False)       #  not found in updated data dictionary
+    data_cleaning_rule_cdr_clean: any(list(str()), str(), null(), required=False)                    #  not found in updated data dictionary
+
+field_item: 
+    field_name: any(list(str()), str(), null())
+    relevant_omop_table: any(list(str()), str(), null())
+    omop_cdm_standard_or_custom_field: any(list(str()), str(), null())
+    description: any(list(str()), str(), null())
+    field_type: any(list(str()), str(), null())
+    data_provenance: any(list(str()), str(), null())
+    source_ppi_module: any(list(str()), str(), null())
+    transformed_by_registered_tier_privacy_methods: any(bool(), null())
+    transformation_applied_in_registered_tier: any(list(str()), str(), null())
+    privacy_output_in_registered_tier: any(list(str()), str(), null())
+
+table_sup_item:
+    relevant_omop_table: any(list(str()), str(), null())
+    omop_cdm_standard_or_custom_field: any(list(str()), str(), null())
+    description: any(list(str()), str(), null())
+    data_provenance: any(list(str()), str(), null())
+    transformed_by_registered_tier_privacy_methods: any(bool(), null())
+    transformation_applied_in_registered_tier: any(list(str()), str(), null())
+    privacy_output_in_registered_tier: any(list(str()), str(), null())
+    
+change_item_dict:
+    change_number: any(list(str()), str(), null())
+    change_description: any(list(str()), str(), null())
+    date_requested: day(min='2017-01-01')
+    date_completed: day(min='2017-01-01')
+    cdr_version: any(list(str()), str(), null())
+    completed_by: any(list(str()), str(), null())

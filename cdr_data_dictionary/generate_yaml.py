@@ -9,10 +9,10 @@ from future.utils import viewitems
 
 # Project imports
 import constants as consts
-from parser import parse_command_line
+import parser
 import service as service
-from validator import validate
-from yaml_logging import setup_logging
+import validator
+import yaml_logging
 
 LOGGER = logging.getLogger(__name__)
 
@@ -333,8 +333,8 @@ def create_yaml_file(settings, values):
 
 def main(raw_args=None):
     # read command line and set up logging
-    args = parse_command_line(raw_args)
-    setup_logging(args)
+    args = parser.parse_command_line(raw_args)
+    yaml_logging.setup_logging(args)
 
     # get the service started up
     credentials = service.create_drive_credentials(args.key_file)
@@ -353,7 +353,7 @@ def main(raw_args=None):
 
     # validate the created yaml file
     try:
-        validate(args.schema_file, args.output_file)
+        validator.validate(args.schema_file, args.output_file)
     except ValueError:
         LOGGER.exception('The generated file does not validate.  Check the '
                          'input source Google spreadsheet and the schema '

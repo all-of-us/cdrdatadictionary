@@ -8,11 +8,11 @@ from dateutil import parser as dt_parser
 from future.utils import viewitems
 
 # Project imports
-import cdr_data_dictionary.constants as consts
-from cdr_data_dictionary.parser import parse_command_line
-import cdr_data_dictionary.service as service
-from cdr_data_dictionary.validator import validate
-from cdr_data_dictionary.yaml_logging import setup_logging
+import constants as consts
+from parser import parse_command_line
+import service as service
+from validator import validate
+from yaml_logging import setup_logging
 
 LOGGER = logging.getLogger(__name__)
 

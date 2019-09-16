@@ -11,7 +11,7 @@ from google.auth.transport.requests import Request
 from google.oauth2 import service_account
 
 # Project imports
-import cdr_data_dictionary.constants as consts
+import constants as consts
 
 LOGGER = logging.getLogger(__name__)
 

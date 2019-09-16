@@ -6,7 +6,7 @@ from string import ascii_uppercase
 # Third party imports
 
 # Project imports
-import cdr_data_dictionary.constants as consts
+import constants as consts
 
 def ascii_to_index(column):
     """
@@ -93,9 +93,9 @@ def parse_command_line(raw_args=None):
                               'the title default to Column A.  Valid choices are letters A-Z.')
                        )
     parser.add_argument('-d', '--schema-file', dest='schema_file', action='store',
-                        default='cdr_data_dictionary/schema.yaml',
+                        default='schema.yaml',
                         help=('Path to the schema yaml file.  If not provided, '
-                              'defaults to \'cdr_data_dictionary/schema.yaml\'.')
+                              'defaults to \'schema.yaml\'.')
                        )
     parser.add_argument('-l', '--log-path', dest='log_path', action='store',
                         default=consts.DEFAULT_LOG, type=log_filepath,

@@ -9,7 +9,7 @@ from future.utils import viewitems
 
 # Project imports
 import constants as consts
-import parser
+import cdr_parser
 import service as service
 import validator
 import yaml_logging
@@ -333,7 +333,7 @@ def create_yaml_file(settings, values):
 
 def main(raw_args=None):
     # read command line and set up logging
-    args = parser.parse_command_line(raw_args)
+    args = cdr_parser.parse_command_line(raw_args)
     yaml_logging.setup_logging(args)
 
     # get the service started up

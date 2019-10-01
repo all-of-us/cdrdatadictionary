@@ -1,3 +1,5 @@
+meta_data: list(include('meta_data_item'))
+
 transformations: list(include('available_field'), include('change_logs'),
                       include('concept_generalization'), include('concept_suppression'),
                       include('field_generalization'), include('field_suppression'),
@@ -25,6 +27,16 @@ field_suppression:
 table_suppression:
     table_suppressions: list(include('table_sup_item'))
 
+meta_data_item:
+    last_modifying_user_display_name: str()
+    name: str()
+    last_modifying_user_email_address: str()
+    modified_time: timestamp(min='2019-01-01 00:00:00')
+    version: int()
+    created_time: timestamp(min='2019-01-01 00:00:00')
+    id: str()
+    cdr_version: str()
+
 available_field_item:
     field_name: any(list(str()), str(), null())
     relevant_omop_table: any(list(str()), str(), null())
@@ -33,7 +45,7 @@ available_field_item:
     field_type: any(list(str()), str(), null())
     data_provenance: any(list(str()), str(), null())
     source_ppi_module: any(list(str()), str(), null())
-    transformed_by_registered_tier_privacy_methods: any(bool(), null())
+    transformed_by_registered_tier_privacy_methods: any(list(bool(), null()), bool(), null())
 
 concept_sup_item:
     concept_id: any(list(int()), int(), null())

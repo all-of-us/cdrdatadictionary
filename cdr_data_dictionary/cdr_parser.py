@@ -1,6 +1,7 @@
 
 # Python imports
 from argparse import ArgumentParser, ArgumentTypeError
+from datetime import datetime
 from string import ascii_uppercase
 
 # Third party imports
@@ -29,6 +30,13 @@ def ascii_to_index(column):
         raise ArgumentTypeError(message)
 
     return index
+
+
+def output_filename(version):
+    out = '../yaml_files/CDRDD_{cdr_version}_{today}.yaml'
+    today = datetime.now().strftime('%Y%m%d')
+    out = out.format(cdr_version=version, today=today)
+    return out
 
 
 def log_filepath(filepath):
@@ -78,10 +86,10 @@ def parse_command_line(raw_args=None):
                         help=('Range of cells to select in the sheet.  '
                               'If not specified, returns all cell values.')
                        )
-    parser.add_argument('-o', '--output-file', action='store', default='out.yaml',
-                        dest='output_file',
-                        help=('Name to give the produced yaml file.  If not '
-                              'provided, defaults to out.yaml')
+    parser.add_argument('-o', '--output-file', action='store', dest='output_file',
+                        default='CDR.yaml',
+                        help=('Name to give the produced yaml file.  Always '
+                              'overridden, to create CDR_<version>_YYYYMMDD.yaml')
                        )
     parser.add_argument('-g', '--group-by', action='store', default=None,
                         dest='column_id',
@@ -105,7 +113,12 @@ def parse_command_line(raw_args=None):
                        )
     parser.add_argument('-c', '--console-log', dest='console_log', action='store_true',
                         help='Print logs to the console, in addition to the log file.')
+    parser.add_argument('--cdr-version', dest='cdr_version', action='store',
+                        required=True,
+                        help='CDR version number.  Used as part of output file name.')
     args = parser.parse_args(raw_args)
+
+    args.output_file = output_filename(args.cdr_version)
     return args
 
 

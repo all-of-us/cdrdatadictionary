@@ -29,19 +29,19 @@ Alternatively, you may use a service account key if you prefer.
 ### Execute the program from the command line
 To execute the yaml generator:
   1.  Ensure your virtual environment is active.  `source <env_name>/bin/activate`
-  2.  To create a yaml file for a single spreadsheet, in the directory with `generate_yaml.py`, type:  `python generate_yaml.py <path_to_client_secret_key> <URL identifier of the Google Sheet> "<Sheet Name>"`
-  3.  To create a yaml file for all spreadsheets, type: `python generate_yaml.py <path_to_client_secret_key> <URL identifier of the Google Sheet>`
+  2.  To create a yaml file for a single spreadsheet, in the directory with `generate_yaml.py`, type:  `python generate_yaml.py -k <path_to_client_secret_key> -i <URL identifier of the Google Sheet> -s "<Sheet Name>" --cdr-version <CDR version spreadsheet correlates with> -c`
+  3.  To create a yaml file for all spreadsheets, type: `python generate_yaml.py -k <path_to_client_secret_key> -i <URL identifier of the Google Sheet> --cdr-version <CDR version spreadsheet correlates with> -c`
 
-This will generate a yaml file for the sheet identified by the URL identifier and the sheet name.  For example, if the URL of the sheet is:  https://docs.google.com/spreadsheets/d/1qDTcz5tUnEGFoZfyPPtp-2mF6U/edit, then the identifier is:  1qDTcz5tUnEGFoZfyPPtp-2mF6U.  If the document contained sheets named:  `Field Gen`, `Row Sup`, you would generate a yaml file for the `Row Sup` sheet with the command line:  `python generate_yaml.py <path_to_client_secret_key> 1qDTcz5tUnEGFoZfyPPtp-2mF6U "Row Sup"`
+This will generate a yaml file for the sheet identified by the URL identifier and the sheet name.  For example, if the URL of the sheet is:  https://docs.google.com/spreadsheets/d/1qDTcz5tUnEGFoZfyPPtp-2mF6U/edit, then the identifier is:  1qDTcz5tUnEGFoZfyPPtp-2mF6U.  If the document contained sheets named:  `Field Gen`, `Row Sup`, you would generate a yaml file for the `Row Sup` sheet for CDR version R1 with the command line:  `python generate_yaml.py -k <path_to_client_secret_key> -i 1qDTcz5tUnEGFoZfyPPtp-2mF6U -s "Row Sup" --cdr-version R1`
 
-Other optional command line arguments exist and can be viewed with: `python generate_yaml.py -h`.  These optional arguments allow you to define an output file name, a range of cells in the sheet, and the column to use when grouping.
+Other optional command line arguments exist and can be viewed with: `python generate_yaml.py -h`.  These optional arguments allow you to define a range of cells in the sheet to read and the column to use when grouping.
 
 ```
 (yaml_env) $ python generate_yaml.py -h
-usage: generate_yaml.py [-h] [-s SHEET_NAME] [-r RANGE] [-o OUTPUT_FILE]
-                        [-g {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z}]
-                        [-d SCHEMA_FILE]
-                        key_file spreadsheet_id
+usage: generate_yaml.py [-h] -k KEY_FILE -i SPREADSHEET_ID [-s SHEET_NAME]
+                        [-r RANGE] [-o OUTPUT_FILE] [-g COLUMN_ID]
+                        [-d SCHEMA_FILE] [-l LOG_PATH] [-c] --cdr-version
+                        CDR_VERSION
 
 Google drive yaml prototype. Automatically generates a yaml file from the read
 only version of the identified file. Defaults exist for choosing the value to
@@ -49,29 +49,37 @@ group around. See https://developers.google.com/sheets/api/quickstart/python
 and https://developers.google.com/sheets/api/guides/concepts for information
 on configuring required credentials for reading Google Drive files.
 
-positional arguments:
-  key_file              Filepath to your service account or client secret key
-  spreadsheet_id        Google spreadsheet ID (as seen in URL)
-
 optional arguments:
   -h, --help            show this help message and exit
-  -s SHEET_NAME, --sheet_name SHEET_NAME
+  -k KEY_FILE, --key-file KEY_FILE
+                        Filepath to your service account or client secret key
+  -i SPREADSHEET_ID, --spreadsheet-id SPREADSHEET_ID
+                        Google spreadsheet ID (as seen in URL)
+  -s SHEET_NAME, --sheet-name SHEET_NAME
                         Name of the sheet in the spreadsheet to parse. Enclose
                         in quotes if the name contains spaces. If not
                         provided, defaults to all sheets.
   -r RANGE, --range RANGE
                         Range of cells to select in the sheet. If not
                         specified, returns all cell values.
-  -o OUTPUT_FILE, --output_file OUTPUT_FILE
-                        Name to give the produced yaml file. If not provided,
-                        defaults to out.yaml
-  -g {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z}, --group_by {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z}
-                        Used to create groupings around a different field in a
-                        sheet. Sheets with 'Field' in the title default to
-                        Column B. Sheets with 'Row' in the title default to
-                        Column D. Sheets with neither in the title default to
-                        Column A.
+  -o OUTPUT_FILE, --output-file OUTPUT_FILE
+                        Name to give the produced yaml file. Always
+                        overridden, to create CDR_<version>_YYYYMMDD.yaml
+  -g COLUMN_ID, --group-by COLUMN_ID
+                        Used to create groupings around fields in a tab. Tabs
+                        with 'Field' in the title default to Column B. Tabs
+                        with 'Row' in the title default to Column D. Tabs with
+                        neither in the title default to Column A. Valid
+                        choices are letters A-Z.
   -d SCHEMA_FILE, --schema-file SCHEMA_FILE
                         Path to the schema yaml file. If not provided,
-                        defaults to 'schema.yaml' in the current directory.
+                        defaults to 'schema.yaml'.
+  -l LOG_PATH, --log-path LOG_PATH
+                        Specify the log file path and/or name. File name
+                        should end in '.log'. Defaults to
+                        LOGS/generate_yaml.log
+  -c, --console-log     Print logs to the console, in addition to the log
+                        file.
+  --cdr-version CDR_VERSION
+                        CDR version number. Used as part of output file name.
 ```

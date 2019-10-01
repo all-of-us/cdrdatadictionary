@@ -1,5 +1,7 @@
+# Python imports
 from argparse import ArgumentParser
 
+# Third party imports
 import yamale
 
 

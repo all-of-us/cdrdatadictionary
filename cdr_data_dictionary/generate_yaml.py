@@ -81,9 +81,9 @@ def _process_value(value):
     return result
 
 
-def append_to_results(field, value, values_dict):
+def append_to_results(field, value, values_dict, unique=False):
     """
-    Helper to add unique values to fields for specific concepts.
+    Helper to add values to fields for specific concepts.
 
     If the value already exists in the values_dict, it is not added a second
     time.
@@ -92,15 +92,40 @@ def append_to_results(field, value, values_dict):
     :param value:  the value to add to a concept
     :param values_dict:  the values that have been processed up to
         this point
+    :param unique:  a flag to only append unique results
 
     :return:  a list of unique values associated with that field
     """
     existing = values_dict.get(field, [])
-    if value in existing:
+    if value in existing and unique:
         return existing
 
     existing.append(value)
     return existing
+
+
+def sequentially_process_tab_contents(values):
+    """
+    Helper method to clean and organize tab values.
+
+    :param values:  list of values read from the tab.  each row is a list of
+        values where each list item corresponds to a row.
+
+    :return:  A tuple for each tab.  The dictionary of concepts is arranged
+        around the field at id_index.  For each unique value in the column
+        identified by id_index, it returns a dictionary of all the other
+        fields and associated values.
+        (A list of fields, A dictionary of concepts)
+    """
+    fields = _process_field_names(values[0])
+    concepts = []
+    for value in values[1:]:
+        new_dict = {}
+        for index, val in enumerate(value):
+            new_value = append_to_results(fields[index], val, {})
+            new_dict[fields[index]] = new_value
+        concepts.append(new_dict)
+    return fields, concepts
 
 
 def process_tab_contents(values, id_index):
@@ -147,7 +172,7 @@ def _write_value(yaml_writer, field_name, value):
         if field_name in consts.INTEGER_FIELDS or field_name in consts.BOOLEAN_FIELDS:
             yaml_writer.write(value)
             yaml_writer.write('\n')
-        elif field_name in consts.DATE_FIELDS:
+        elif field_name in consts.TEMPORAL_FIELDS:
             date = dt_parser.parse(value)
             dt_str = date.strftime(consts.DATE_FORMAT)
             yaml_writer.write(dt_str + "\n")
@@ -166,44 +191,96 @@ def _write_value(yaml_writer, field_name, value):
         yaml_writer.write(str(value) + '\n')
 
 
-def write_yaml_file(filepath, fields, value_dict, sequence_name, index):
+def _write_meta_data(yaml_writer, meta_data):
+    """
+    Helper function to write the meta data dictionary into the yaml output file
+
+    :param yaml_writer:  The yaml file writer object.
+    :param meta_data:  a dictionary of meta data values.  Everything in the
+        dictionary is written to the meta_data yaml object.
+    """
+    yaml_writer.write('meta_data:\n  -\n')
+    for key, value in viewitems(meta_data):
+        yaml_writer.write('    ' + key + ': ')
+        if key in consts.INTEGER_FIELDS or key in consts.BOOLEAN_FIELDS:
+            yaml_writer.write(value)
+            yaml_writer.write('\n')
+        elif key in consts.TEMPORAL_FIELDS:
+            date = dt_parser.parse(value)
+            dt_str = date.strftime(consts.DATETIME_FORMAT)
+            yaml_writer.write(dt_str + '\n')
+        else:
+            yaml_writer.write("'" + value + "'\n")
+
+
+def write_yaml_file(filepath, meta_data, fields, values_container, sequence_name, index):
     """
     Function responsible for writing the dictionary values into a yaml file.
 
     :param filepath: name of the generated file, as specified from the command line.
+    :param meta_data:  dictionary of meta data describing the spreadsheet
     :param fields: a list of fields for each tab.  each tab has a list of fields.
         this is a list of lists.
-    :param value_dict: a list of dictionaries.  for each tab, the dictionary of
-        processed tab values.
+    :param value_container: a representation of the values read from the
+        spreadsheet in either list or dictionary form.
     :param sequence_name:  the generated sequence name.  used to identify which
         yaml sequence the following values are definitions of.
     :param index:  identifier for the column grouped by. Identifies the first
         field that will be written for each dictionary item.
     """
     with open(filepath, 'w') as yaml:
+        # write the meta data
+        _write_meta_data(yaml, meta_data)
+        yaml.write('\n')
+
+        # start writing actual value data
         yaml.write('transformations:\n')
         for list_index, _ in enumerate(sequence_name):
             LOGGER.info("Writing transformations for: %s", sequence_name[list_index])
-            _write_yaml_list(yaml,
-                             fields[list_index],
-                             value_dict[list_index],
-                             sequence_name[list_index],
-                             index[list_index]
-                            )
+            yaml.write('  - \n    ' + sequence_name[list_index] + ':\n')
+
+            if isinstance(values_container[list_index], dict):
+                _write_yaml_dict(yaml,
+                                 fields[list_index],
+                                 values_container[list_index],
+                                 index[list_index]
+                                )
+            elif isinstance(values_container[list_index], list):
+                _write_yaml_list(yaml,
+                                 fields[list_index],
+                                 values_container[list_index],
+                                 index[list_index]
+                                )
 
 
-def _write_yaml_list(yaml, fields, value_dict, sequence_name, index):
-    """
-    Given some values, write them to a yaml formatted file.
+def _write_yaml_list(yaml, fields, value_list, index):
+    grouping_field = fields[index]
 
-    :param yaml:  yaml file handler to write values to
-    :param fields: list of fields for the sequence (tab) and values.
-    :param value_dict: dictionary of all fields and values with the keys
-        as the values at columns fields[index]
-    :param sequence_name: sequence name as generated from the tab name
-    :param index:  identifies the column the values in value_dict are grouped by
-    """
-    yaml.write('  - \n    ' + sequence_name + ':\n')
+    for value_dict in value_list:
+        yaml.write('      - \n')   # marks this as a sequence
+        yaml.write('        ' + grouping_field + ":  ")
+
+        grouping_value = value_dict.get(fields[index])[0]
+        if grouping_field in consts.INTEGER_FIELDS or grouping_field in consts.BOOLEAN_FIELDS:
+            yaml.write(grouping_value)
+            yaml.write('\n')
+        else:
+            yaml.write("'" + grouping_value + "'\n")
+
+        for key, value in viewitems(value_dict):
+            if key == grouping_field:
+                continue
+            yaml.write('        ' + key + ':  ')
+            sub_value = _process_value(value[0])
+            if sub_value:
+                _write_value(yaml, key, sub_value)
+            else:
+                yaml.write('\n')
+
+        yaml.write('\n')
+
+
+def _write_yaml_dict(yaml, fields, value_dict, index):
     for key, value in viewitems(value_dict):
         key = _process_value(key)
         if key is None or key.isspace() or not key:
@@ -275,7 +352,13 @@ def _create_yaml_file(settings, tab_name, values):
         unique values.  These sub-keys may contain list values.
         (sequence_title, fields, values_dict, group_by)
     """
+    sequence_title = _get_sequence_title(tab_name)
     group_by = settings.column_id
+
+    fields, values_list = None, None
+    if not group_by:
+        fields, values_list = sequentially_process_tab_contents(values)
+
     if tab_name in ['Concept (Row) Generalizations', 'Concept (Row) Suppressions']:
         if group_by is None:
             group_by = 3
@@ -298,12 +381,13 @@ def _create_yaml_file(settings, tab_name, values):
 
         LOGGER.info("Sheet name unrecognized.  Grouping will be done on Column %s.", column)
 
-    sequence_title = _get_sequence_title(tab_name)
-    fields, values_dict = process_tab_contents(values, group_by)
-    return (sequence_title, fields, values_dict, group_by)
+    if not fields:
+        fields, values_list = process_tab_contents(values, group_by)
+
+    return (sequence_title, fields, values_list, group_by)
 
 
-def create_yaml_file(settings, values):
+def create_yaml_file(settings, values, meta_data):
     """
     Entry point for creating a yaml file from the given values and settings
 
@@ -311,6 +395,8 @@ def create_yaml_file(settings, values):
         python namespace values.
     :param values:  values read from the google drive spreadsheet.  a list of
         tuples in the form (tab_name, values).
+    :param meta_data:  a dictionary of file meta data.  added to the yaml file
+        for ease of access
     """
     output_file = settings.output_file
 
@@ -319,36 +405,45 @@ def create_yaml_file(settings, values):
     output_values = []
     grouped_by = []
     for item in values:
-        seq_title, fields, values_dict, grouped = _create_yaml_file(settings, item[0], item[1])
+        seq_title, fields, values_list, grouped = _create_yaml_file(settings, item[0], item[1])
         seq_titles.append(seq_title)
         output_fields.append(fields)
-        output_values.append(values_dict)
+        output_values.append(values_list)
         grouped_by.append(grouped)
 
-    write_yaml_file(output_file, output_fields, output_values, seq_titles, grouped_by)
+    write_yaml_file(output_file, meta_data, output_fields, output_values, seq_titles, grouped_by)
 
     LOGGER.info("Done.  Read %d tabs.  Created yaml file: %s",
                 len(seq_titles), output_file)
 
 
 def main(raw_args=None):
+    """
+    Main entry point to generating yaml from a spreadsheet.
+    """
     # read command line and set up logging
     args = cdr_parser.parse_command_line(raw_args)
     yaml_logging.setup_logging(args)
 
     # get the service started up
     credentials = service.create_drive_credentials(args.key_file)
-    dd_service = service.create_spreadsheets_service(credentials)
+    dd_values_service = service.create_spreadsheets_service(credentials)
+    dd_meta_service = service.create_meta_data_service(credentials)
     LOGGER.debug("Successfully set up credentials.")
 
     # read the values
-    values = service.read_sheet_values(dd_service, args)
+    values = service.read_sheet_values(dd_values_service, args)
+
+    # read the meta data
+    meta_data = service.read_meta_data(dd_meta_service, args)
+    # add cdr version to meta data
+    meta_data['cdr_version'] = args.cdr_version
 
     for index, _ in enumerate(values):
         LOGGER.info("Read %d values from: %s", len(values[index][1]), values[index][0])
 
     # create the yaml file
-    create_yaml_file(args, values)
+    create_yaml_file(args, values, meta_data)
     LOGGER.debug("Created the yaml file.")
 
     # validate the created yaml file
@@ -358,8 +453,9 @@ def main(raw_args=None):
         LOGGER.exception('The generated file does not validate.  Check the '
                          'input source Google spreadsheet and the schema '
                          'definition file for changes.  Update as needed.')
+    else:
+        LOGGER.info("Successfully validated yaml file: %s", args.output_file)
 
-    LOGGER.info("Successfully validated yaml file: %s", args.output_file)
 
 if __name__ == '__main__':
     main()

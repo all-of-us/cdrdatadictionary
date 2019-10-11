@@ -93,7 +93,7 @@ transformations:
 
       - 
         change_number:  'C011'
-        change_description:  'Added 10 new observation_source_concept_ids to Concept (Row) Suppressions: ,  1585559,  43529714,  1585917,  1585913,  43529731,  43529729,  43529730,  1585933,  1585929,  1585965'
+        change_description:  'Added 10 new observation_source_concept_ids to Concept (Row) Suppressions: ,  1585559,  43529714,  1585917,  1585913,  43529731,  43529729,  43529730,  1585933,  1585929,  1585965'
         date_requested:  2019-10-03
         date_completed:  2019-10-03
         cdr_version:  'R2019Q4R1'
@@ -64742,7 +64742,7 @@ transformations:
         transformation_applied_in_registered_tier:  'State Generalization'
         registered_tier_transformation_description:  'StateAddress_PIIState is generalized when one of two conditions are met:,  1. There are less than 200 participants from a given state (i.e. with a single value for value_source_concept_id),  2. If the participant''s state of residence (indicated by the value_source_concept_id) does not match the state of the Program site providing the participant''s EHR'
         fields_affected:  'value_source_concept_id, value_source_value'
-        input_concept_id:  varies
+        input_concept_id:  'varies'
         input_concept_name:  'varies'
         generalized_output_concept_id:  2000000011
         generalized_output_concept_name:  'AoUDRC_GeneralizedState'
@@ -65790,7 +65790,7 @@ transformations:
         transformation_applied_in_registered_tier:  'State Generalization'
         registered_tier_transformation_description:  'StateAddress_PIIState is generalized when one of two conditions are met:,  1. There are less than 200 participants from a given state (i.e. with a single value for value_source_concept_id),  2. If the participant''s state of residence (indicated by the value_source_concept_id) does not match the state of the Program site providing the participant''s EHR'
         fields_affected:  'answer_concept_id, answer'
-        input_concept_id:  varies
+        input_concept_id:  'varies'
         input_concept_name:  'varies'
         generalized_output_concept_id:  2000000011
         generalized_output_concept_name:  'AoUDRC_GeneralizedState'
@@ -66849,7 +66849,7 @@ transformations:
         transformation_applied_in_registered_tier:  'State Generalization'
         registered_tier_transformation_description:  'StateAddress_PIIState is generalized when one of two conditions are met:,  1. There are less than 200 participants from a given state (i.e. with a single value for value_source_concept_id),  2. If the participant''s state of residence (indicated by the value_source_concept_id) does not match the state of the Program site providing the participant''s EHR'
         fields_affected:  'value_source_concept_id, value_source_value'
-        input_concept_id:  varies
+        input_concept_id:  'varies'
         input_concept_name:  'varies'
         generalized_output_concept_id:  2000000011
         generalized_output_concept_name:  'AoUDRC_GeneralizedState'

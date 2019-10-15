@@ -1,12 +1,33 @@
 # Python imports
 from argparse import ArgumentParser
+import re
 
 # Third party imports
 import yamale
+from yamale.validators import DefaultValidators, Validator
+
+# Project imports
+import constants as consts
+
+
+class URL(Validator):
+    """ Custom URL validator """
+    tag = 'url'
+
+    def _is_valid(self, value):
+        try:
+            if re.match(consts.URL_REGEX, value):
+                return True
+            return False
+        except TypeError:
+            return False
 
 
 def validate(schema_path, dict_path):
-    schema = yamale.make_schema(schema_path)
+    validators = DefaultValidators.copy()  # This is a dictionary
+    validators[URL.tag] = URL
+
+    schema = yamale.make_schema(schema_path, validators=validators)
     data = yamale.make_data(dict_path)
     yamale.validate(schema, data)
 

@@ -1,6 +1,8 @@
 
 # Python imports
+import copy
 import logging
+import re
 from string import ascii_uppercase
 
 # Third party imports
@@ -104,7 +106,7 @@ def append_to_results(field, value, values_dict, unique=False):
     return existing
 
 
-def sequentially_process_tab_contents(values):
+def sequentially_process_tab_contents(values, init_fields={}):
     """
     Helper method to clean and organize tab values.
 
@@ -120,7 +122,7 @@ def sequentially_process_tab_contents(values):
     fields = _process_field_names(values[0])
     concepts = []
     for value in values[1:]:
-        new_dict = {}
+        new_dict = copy.copy(init_fields)
         for index, val in enumerate(value):
             new_value = append_to_results(fields[index], val, {})
             new_dict[fields[index]] = new_value
@@ -172,9 +174,19 @@ def _write_value(yaml_writer, field_name, value):
         if field_name in consts.INTEGER_FIELDS or field_name in consts.BOOLEAN_FIELDS:
             yaml_writer.write(value)
             yaml_writer.write('\n')
+        elif field_name in consts.MULTIPLE_TYPES:
+            try:
+                v = int(value)
+                yaml_writer.write(value)
+                yaml_writer.write('\n')
+            except ValueError:
+                yaml_writer.write("'" + value + "'\n")
         elif field_name in consts.TEMPORAL_FIELDS:
             date = dt_parser.parse(value)
-            dt_str = date.strftime(consts.DATE_FORMAT)
+            if 'time' in field_name:
+                dt_str = date.strftime(consts.DATETIME_FORMAT)
+            elif 'date' in field_name:
+                dt_str = date.strftime(consts.DATE_FORMAT)
             yaml_writer.write(dt_str + "\n")
         else:
             yaml_writer.write("'" + value + "'\n")
@@ -202,15 +214,7 @@ def _write_meta_data(yaml_writer, meta_data):
     yaml_writer.write('meta_data:\n  -\n')
     for key, value in viewitems(meta_data):
         yaml_writer.write('    ' + key + ': ')
-        if key in consts.INTEGER_FIELDS or key in consts.BOOLEAN_FIELDS:
-            yaml_writer.write(value)
-            yaml_writer.write('\n')
-        elif key in consts.TEMPORAL_FIELDS:
-            date = dt_parser.parse(value)
-            dt_str = date.strftime(consts.DATETIME_FORMAT)
-            yaml_writer.write(dt_str + '\n')
-        else:
-            yaml_writer.write("'" + value + "'\n")
+        _write_value(yaml_writer, key, value)
 
 
 def write_yaml_file(filepath, meta_data, fields, values_container, sequence_name, index):
@@ -355,21 +359,40 @@ def _create_yaml_file(settings, tab_name, values):
     sequence_title = _get_sequence_title(tab_name)
     group_by = settings.column_id
 
-    fields, values_list = None, None
-    if not group_by:
-        fields, values_list = sequentially_process_tab_contents(values)
-
-    if tab_name in ['Concept (Row) Generalizations', 'Concept (Row) Suppressions']:
+    if tab_name == 'Concept (Row) Generalizations':
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_ROW_GENERALIZATIONS)
         if group_by is None:
             group_by = 3
-    elif tab_name in ['Field (Column) Generalizations', 'Field (Column) Suppressions',
-                      'Available Fields']:
+    elif tab_name == 'Concept (Row) Suppressions':
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_ROW_SUPPRESSIONS)
+        if group_by is None:
+            group_by = 3
+    elif tab_name == 'Field (Column) Generalizations':
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_COL_GENERALIZATIONS)
         if group_by is None:
             group_by = 1
-    elif tab_name in ['Table Suppressions', 'Change Log']:
+    elif tab_name == 'Field (Column) Suppressions':
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_COL_SUPPRESSIONS)
+        if group_by is None:
+            group_by = 1
+    elif tab_name == 'Available Fields':
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_AVAILABLE_FIELDS_VALUES)
+        if group_by is None:
+            group_by = 1
+    elif tab_name == 'Table Suppressions':
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_TABLE_SUPPRESSIONS)
+        if group_by is None:
+            group_by = 0
+    elif tab_name == 'Change Log':
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_CHANGE_LOG_VALUES)
+        if group_by is None:
+            group_by = 0
+    elif tab_name == 'Cleaning & Conformance':
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_CLEAN_CONFORM_VALUES)
         if group_by is None:
             group_by = 0
     else:
+        fields, values_list = sequentially_process_tab_contents(values, {})
         if group_by is None:
             group_by = 0
         try:
@@ -381,10 +404,36 @@ def _create_yaml_file(settings, tab_name, values):
 
         LOGGER.info("Sheet name unrecognized.  Grouping will be done on Column %s.", column)
 
-    if not fields:
-        fields, values_list = process_tab_contents(values, group_by)
-
     return (sequence_title, fields, values_list, group_by)
+
+
+def get_merged_lists(val_list, form_list):
+    pattern = re.compile(consts.HYPERLINK_REGEX, re.UNICODE)
+
+    for list_index, formula_list in enumerate(form_list):
+        for item_index, item in enumerate(formula_list):
+            try:
+                match = pattern.match(item)
+                if match:
+                    link = match.group('link').strip()
+                    if link.startswith('http'):
+                        val_list[list_index][item_index] = link
+            except TypeError:
+                pass
+
+    return val_list
+
+
+def merge_values_and_formulas(values, formulas):
+    final_values = []
+    for val_tup in values:
+        merged_list = []
+        for for_tup in formulas:
+            if val_tup[0] == for_tup[0]:
+                merged_list = get_merged_lists(val_tup[1], for_tup[1])
+                final_values.append((val_tup[0], merged_list))
+
+    return final_values
 
 
 def create_yaml_file(settings, values, meta_data):
@@ -433,6 +482,9 @@ def main(raw_args=None):
 
     # read the values
     values = service.read_sheet_values(dd_values_service, args)
+    formulas = service.read_sheet_values(dd_values_service, args, render_option='FORMULA')
+
+    values = merge_values_and_formulas(values, formulas)
 
     # read the meta data
     meta_data = service.read_meta_data(dd_meta_service, args)

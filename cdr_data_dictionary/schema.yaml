@@ -1,9 +1,13 @@
 meta_data: list(include('meta_data_item'))
 
-transformations: list(include('available_field'), include('change_logs'),
-                      include('concept_generalization'), include('concept_suppression'),
-                      include('field_generalization'), include('field_suppression'),
-                      include('table_suppression'))
+transformations: list(include('available_field'),
+                      include('change_logs'),
+                      include('concept_generalization'),
+                      include('concept_suppression'),
+                      include('field_generalization'),
+                      include('field_suppression'),
+                      include('table_suppression'),
+                      include('clean_conformance_rules'))
 
 ---
 available_field:
@@ -27,14 +31,17 @@ field_suppression:
 table_suppression:
     table_suppressions: list(include('table_sup_item'))
 
+clean_conformance_rules:
+    cleaning_&_conformance: list(include('clean_conform_item_dict'))
+
 meta_data_item:
-    last_modifying_user_display_name: str()
-    name: str()
-    last_modifying_user_email_address: str()
+    last_modifying_user_display_name: any(str(), null())
+    name: any(str(), null())
+    last_modifying_user_email_address: any(str(), null())
     modified_time: timestamp(min='2019-01-01 00:00:00')
-    version: int()
+    version: any(int(), null())
     created_time: timestamp(min='2019-01-01 00:00:00')
-    id: str()
+    id: any(str(), null())
     cdr_version: str()
 
 available_field_item:
@@ -46,6 +53,11 @@ available_field_item:
     data_provenance: any(list(str()), str(), null())
     source_ppi_module: any(list(str()), str(), null())
     transformed_by_registered_tier_privacy_methods: any(list(bool(), null()), bool(), null())
+    transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
+    additional_notes: any(str(), null())
+    transformation_applied_(registered_tier): any(null(), bool())
+    transformation_applied_(controlled_tier): any(null(), bool())
+    data_cleaning_rule_(cdr_clean): any(null(), str())
 
 concept_sup_item:
     concept_id: any(list(int()), int(), null())
@@ -55,9 +67,11 @@ concept_sup_item:
     data_provenance: any(list(str()), str(), null())
     source_ppi_module: any(list(str()), str(), null())
     transformation_applied_in_registered_tier: any(list(str()), str(), null())
-    transformed_by_registered_tier_privacy_methods: any(bool(), null(), required=False)
+    transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
+    transformation_applied_(controlled_tier): any(null(), bool())
     privacy_output_in_registered_tier: any(list(str()), str(), null())
-    additional_notes: any(list(str()), str(), null(), required=False)
+    data_cleaning_rule_(cdr_clean): any(null(), str())
+    additional_notes: any(str(), null())
 
 concept_gen_item:
     concept_id: any(list(int()), int(), null())
@@ -66,19 +80,20 @@ concept_gen_item:
     concept_name: any(list(str()), str(), null())
     data_provenance: any(list(str()), str(), null())
     source_ppi_module: any(list(str()), str(), null())
-    transformed_by_registered_tier_privacy_methods: any(bool(), null(), required=False)
+    transformation_applied_in_registered_tier: any(list(str()), str(), null())
     registered_tier_transformation_description: any(list(str()), str(), null())
     fields_affected: any(list(str()), str(), null(), required=False)
-    input_concept_id: any(list(int()), int(), null(), required=False)
+    input_concept_id: any(url(), list(url()), list(int()), int() ,null(), required=False)
     input_concept_name: any(list(str()), str(), null(), required=False)
     generalized_output_concept_id: any(list(int()), int(), null(), required=False)
     generalized_output_concept_name: any(list(str()), str(), null(), required=False)
     additional_notes: any(list(str()), str(), null(), required=False)
-    transformed_by_controlled_tier_privacy_methods: any(bool(), null(), required=False)                   #  not found in updated lists
-    transformation_applied_in_controlled_tier: any(list(str()), str(), null(), required=False)       #  not found in updated data dictionary
-    data_cleaning_rule_cdr_clean: any(list(str()), str(), null(), required=False)                    #  not found in updated data dictionary
+    transformation_applied_in_controlled_tier: any(list(str()), str(), null(), required=False)
+    transformation_applied_(controlled_tier): any(null(), bool())
+    transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
+    data_cleaning_rule_cdr_clean: any(list(str()), str(), null(), required=False)
 
-field_item: 
+field_item:
     field_name: any(list(str()), str(), null())
     relevant_omop_table: any(list(str()), str(), null())
     omop_cdm_standard_or_custom_field: any(list(str()), str(), null())
@@ -89,6 +104,10 @@ field_item:
     transformed_by_registered_tier_privacy_methods: any(bool(), null())
     transformation_applied_in_registered_tier: any(list(str()), str(), null())
     privacy_output_in_registered_tier: any(list(str()), str(), null())
+    transformation_applied_(controlled_tier): any(null(), bool())
+    transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
+    data_cleaning_rule_(cdr_clean): any(null(), str())
+    additional_notes: any(str(), null())
 
 table_sup_item:
     relevant_omop_table: any(list(str()), str(), null())
@@ -98,7 +117,11 @@ table_sup_item:
     transformed_by_registered_tier_privacy_methods: any(bool(), null())
     transformation_applied_in_registered_tier: any(list(str()), str(), null())
     privacy_output_in_registered_tier: any(list(str()), str(), null())
-    
+    transformation_applied_(controlled_tier): any(null(), bool())
+    transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
+    data_cleaning_rule_(cdr_clean): any(null(), str())
+    additional_notes: any(str(), null())
+
 change_item_dict:
     change_number: any(list(str()), str(), null())
     change_description: any(list(str()), str(), null())
@@ -106,3 +129,12 @@ change_item_dict:
     date_completed: day(min='2017-01-01')
     cdr_version: any(list(str()), str(), null())
     completed_by: any(list(str()), str(), null())
+
+clean_conform_item_dict:
+    rule_name: any(str(), url(), null())
+    rule_description: any(str(), null())
+    cdr_impacted: any(str(), null())
+    tables_affected: any(str(), null())
+    fields_affected: any(str(), null())
+    outputs: any(str(), null())
+    notes: any(str(), null())

@@ -89,13 +89,15 @@ def create_meta_data_service(credentials=None):
     return build('drive', 'v3', credentials=credentials, cache_discovery=False)
 
 
-def read_sheet_values(service, args):
+def read_sheet_values(service, args, render_option='FORMATTED_VALUE'):
     """
     Read the values of the spreadsheet.
 
     :param service:  The google sheets service to use for reading
     :param args:  command line arguments describing which sheet to read.  It
         can limit reading values to a range of values or to a tab within a sheet.
+    :param render_option:  how to read the spreadsheet values.  May be either
+        'FORMATTED_VALUE', 'UNFORMATTED_VALUE', 'FORMULA'.
 
     :return a list of values read for each defined section of the sheet.  Sections
         are tabs or ranges.
@@ -112,7 +114,10 @@ def read_sheet_values(service, args):
     results = []
     for cell_range in cell_list:
         result = sheet.values().get(
-            spreadsheetId=args.spreadsheet_id, range=cell_range, majorDimension='ROWS'
+            spreadsheetId=args.spreadsheet_id,
+            range=cell_range,
+            majorDimension='ROWS',
+            valueRenderOption=render_option
         ).execute()
 
         values = result.get('values', [])

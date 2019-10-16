@@ -33,7 +33,7 @@ def ascii_to_index(column):
 
 
 def output_filename(version):
-    out = '../yaml_files/CDR_{cdr_version}_{today}.yaml'
+    out = '../yaml_files/CDRDD_{cdr_version}_{today}.yaml'
     today = datetime.now().strftime('%Y%m%d')
     out = out.format(cdr_version=version, today=today)
     return out

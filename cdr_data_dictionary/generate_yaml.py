@@ -170,37 +170,40 @@ def _write_value(yaml_writer, field_name, value):
         It is used to determine how to write the value.
     :param value:  The processed value to write.
     """
-    try:
-        if field_name in consts.INTEGER_FIELDS or field_name in consts.BOOLEAN_FIELDS:
-            yaml_writer.write(value)
-            yaml_writer.write('\n')
-        elif field_name in consts.MULTIPLE_TYPES:
-            try:
-                v = int(value)
+    if value:
+        try:
+            if field_name in consts.INTEGER_FIELDS or field_name in consts.BOOLEAN_FIELDS:
                 yaml_writer.write(value)
                 yaml_writer.write('\n')
-            except ValueError:
+            elif field_name in consts.MULTIPLE_TYPES:
+                try:
+                    v = int(value)
+                    yaml_writer.write(value)
+                    yaml_writer.write('\n')
+                except ValueError:
+                    yaml_writer.write("'" + value + "'\n")
+            elif field_name in consts.TEMPORAL_FIELDS:
+                date = dt_parser.parse(value)
+                if 'time' in field_name:
+                    dt_str = date.strftime(consts.DATETIME_FORMAT)
+                elif 'date' in field_name:
+                    dt_str = date.strftime(consts.DATE_FORMAT)
+                yaml_writer.write(dt_str + "\n")
+            else:
                 yaml_writer.write("'" + value + "'\n")
-        elif field_name in consts.TEMPORAL_FIELDS:
-            date = dt_parser.parse(value)
-            if 'time' in field_name:
-                dt_str = date.strftime(consts.DATETIME_FORMAT)
-            elif 'date' in field_name:
-                dt_str = date.strftime(consts.DATE_FORMAT)
-            yaml_writer.write(dt_str + "\n")
-        else:
-            yaml_writer.write("'" + value + "'\n")
-    except IndexError:
-        LOGGER.exception("can't write value for field %s", field_name)
-        yaml_writer.write('  IndexError - cant write this value\n')
-    except UnicodeEncodeError:
-        LOGGER.exception("can't write value for field %s", field_name)
-        yaml_writer.write('  UnicodeEncodeError - cant write this value\n')
-    except UnicodeDecodeError:
-        LOGGER.exception("can't write value for field %s", field_name)
-        yaml_writer.write('  UnicodeDecodeError - cant write this value\n')
-    except TypeError:
-        yaml_writer.write(str(value) + '\n')
+        except IndexError:
+            LOGGER.exception("can't write value for field %s", field_name)
+            yaml_writer.write('  IndexError - cant write this value\n')
+        except UnicodeEncodeError:
+            LOGGER.exception("can't write value for field %s", field_name)
+            yaml_writer.write('  UnicodeEncodeError - cant write this value\n')
+        except UnicodeDecodeError:
+            LOGGER.exception("can't write value for field %s", field_name)
+            yaml_writer.write('  UnicodeDecodeError - cant write this value\n')
+        except TypeError:
+            yaml_writer.write(str(value) + '\n')
+    else:
+        yaml_writer.write('\n')
 
 
 def _write_meta_data(yaml_writer, meta_data):
@@ -487,9 +490,13 @@ def main(raw_args=None):
     values = merge_values_and_formulas(values, formulas)
 
     # read the meta data
-    meta_data = service.read_meta_data(dd_meta_service, args)
+    mdata = service.read_meta_data(dd_meta_service, args)
     # add cdr version to meta data
-    meta_data['cdr_version'] = args.cdr_version
+    mdata['cdr_version'] = args.cdr_version
+
+    # initialize all meta data fields
+    meta_data = copy.copy(consts.INIT_META_DATA_VALUES)
+    meta_data.update(mdata)
 
     for index, _ in enumerate(values):
         LOGGER.info("Read %d values from: %s", len(values[index][1]), values[index][0])

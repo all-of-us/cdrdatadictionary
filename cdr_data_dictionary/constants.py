@@ -47,6 +47,17 @@ URL_REGEX = '(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-
 
 BLANK_VALUE = [u'']
 
+INIT_META_DATA_VALUES = {
+    u'last_modifying_user_display_name': None,
+    u'name': None,
+    u'last_modifying_user_email_address': None,
+    u'modified_time': None,
+    u'version': None,
+    u'created_time': None,
+    u'id': None,
+    u'cdr_version': None
+}
+
 INIT_AVAILABLE_FIELDS_VALUES = {
     u'relevant_omop_table': BLANK_VALUE,
     u'field_name': BLANK_VALUE,

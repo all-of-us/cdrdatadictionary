@@ -33,7 +33,7 @@ class CDRParserTest(unittest.TestCase):
             'range': None,
             'output_file': self.output_file,
             'column_id': None,
-            'schema_file': 'schema.yaml',
+            'schema_file': 'cdr_data_dictionary/schema.yaml',
             'log_path': consts.DEFAULT_LOG,
             'console_log': False,
             'cdr_version': self.cdr_version
@@ -48,7 +48,6 @@ class CDRParserTest(unittest.TestCase):
             '--cdr-version', self.cdr_version,
             '--sheet-name', "Change Log",
             '--range', 'A1:M30',
-            '--output-file', 'overwrite_this.yaml',
             '--group-by', 'c',
             '--schema-file', 'test_schema.yaml',
             '--log-path', 'log.log',

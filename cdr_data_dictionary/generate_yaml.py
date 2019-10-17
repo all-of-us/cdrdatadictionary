@@ -1,4 +1,8 @@
-
+"""
+Module to create a yaml file from a google spread sheet.
+Designed specifically for use with the CDR Data Dictionary.
+This is an entry point.
+"""
 # Python imports
 import copy
 import logging
@@ -10,11 +14,11 @@ from dateutil import parser as dt_parser
 from future.utils import viewitems
 
 # Project imports
-import constants as consts
-import cdr_parser
-import service as service
-import validator
-import yaml_logging
+from cdr_data_dictionary import constants as consts
+from cdr_data_dictionary import cdr_parser
+from cdr_data_dictionary import service as service
+from cdr_data_dictionary import validator
+from cdr_data_dictionary import yaml_logging
 
 LOGGER = logging.getLogger(__name__)
 
@@ -106,7 +110,7 @@ def append_to_results(field, value, values_dict, unique=False):
     return existing
 
 
-def sequentially_process_tab_contents(values, init_fields={}):
+def sequentially_process_tab_contents(values, init_fields=None):
     """
     Helper method to clean and organize tab values.
 
@@ -119,6 +123,9 @@ def sequentially_process_tab_contents(values, init_fields={}):
         fields and associated values.
         (A list of fields, A dictionary of concepts)
     """
+    if not init_fields:
+        init_fields = {}
+
     fields = _process_field_names(values[0])
     concepts = []
     for value in values[1:]:
@@ -177,8 +184,8 @@ def _write_value(yaml_writer, field_name, value):
                 yaml_writer.write('\n')
             elif field_name in consts.MULTIPLE_TYPES:
                 try:
-                    v = int(value)
-                    yaml_writer.write(value)
+                    int_value = int(value)
+                    yaml_writer.write(int_value)
                     yaml_writer.write('\n')
                 except ValueError:
                     yaml_writer.write("'" + value + "'\n")
@@ -261,6 +268,9 @@ def write_yaml_file(filepath, meta_data, fields, values_container, sequence_name
 
 
 def _write_yaml_list(yaml, fields, value_list, index):
+    """
+    Write a list to a yaml file.
+    """
     grouping_field = fields[index]
 
     for value_dict in value_list:
@@ -288,6 +298,9 @@ def _write_yaml_list(yaml, fields, value_list, index):
 
 
 def _write_yaml_dict(yaml, fields, value_dict, index):
+    """
+    Write a dictionary to yaml file format.
+    """
     for key, value in viewitems(value_dict):
         key = _process_value(key)
         if key is None or key.isspace() or not key:
@@ -364,40 +377,31 @@ def _create_yaml_file(settings, tab_name, values):
 
     if tab_name == 'Concept (Row) Generalizations':
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_ROW_GENERALIZATIONS)
-        if group_by is None:
-            group_by = 3
+        group_by = 3 if group_by is None else group_by
     elif tab_name == 'Concept (Row) Suppressions':
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_ROW_SUPPRESSIONS)
-        if group_by is None:
-            group_by = 3
+        group_by = 3 if group_by is None else group_by
     elif tab_name == 'Field (Column) Generalizations':
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_COL_GENERALIZATIONS)
-        if group_by is None:
-            group_by = 1
+        group_by = 1 if group_by is None else group_by
     elif tab_name == 'Field (Column) Suppressions':
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_COL_SUPPRESSIONS)
-        if group_by is None:
-            group_by = 1
+        group_by = 1 if group_by is None else group_by
     elif tab_name == 'Available Fields':
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_AVAILABLE_FIELDS_VALUES)
-        if group_by is None:
-            group_by = 1
+        group_by = 1 if group_by is None else group_by
     elif tab_name == 'Table Suppressions':
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_TABLE_SUPPRESSIONS)
-        if group_by is None:
-            group_by = 0
+        group_by = 0 if group_by is None else group_by
     elif tab_name == 'Change Log':
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_CHANGE_LOG_VALUES)
-        if group_by is None:
-            group_by = 0
+        group_by = 0 if group_by is None else group_by
     elif tab_name == 'Cleaning & Conformance':
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_CLEAN_CONFORM_VALUES)
-        if group_by is None:
-            group_by = 0
+        group_by = 0 if group_by is None else group_by
     else:
         fields, values_list = sequentially_process_tab_contents(values, {})
-        if group_by is None:
-            group_by = 0
+        group_by = 0 if group_by is None else group_by
         try:
             column = ascii_uppercase[group_by]
         except IndexError:
@@ -411,6 +415,18 @@ def _create_yaml_file(settings, tab_name, values):
 
 
 def get_merged_lists(val_list, form_list):
+    """
+    Performs the actual low level merging of lists.
+
+    If the link parameter starts with 'http', then the value list value is
+    updated.  Otherwise, the value list value remains untouched.
+
+    :param val_list:  The value list that may need to be updated.
+    :param form_list:  The formula list that is checked for hyperlinks to update
+        the val_list with.
+
+    :return:  The value list with any required updates.
+    """
     pattern = re.compile(consts.HYPERLINK_REGEX, re.UNICODE)
 
     for list_index, formula_list in enumerate(form_list):
@@ -428,6 +444,24 @@ def get_merged_lists(val_list, form_list):
 
 
 def merge_values_and_formulas(values, formulas):
+    """
+    Merge the data values and formulas read from the spreadsheets.
+
+    Merge is required to prevent dates from turning into integers that are
+    indistinguishable from other integer fields.  It also distinguishes between
+    internal and external hyperlinks.  Internal spreadsheet hyperlinks maintain
+    their data value.  External spreadsheet hyperlinks replace their data value.
+
+    :param values:  a list of tuples of the form [(sheet_name, [[value_row_1], [value_row_2]])]
+        where rows contain actual cell data values
+    :param formulas:  a list of tuples of the form
+        [(sheet_name, [[value_row_1], [value_row_2]])] where rows contain formula
+        data if it exists, otherwise, cell data values.
+
+    :return:  a list of the form
+        [(sheet_name, [[value_row_1], [value_row_2]])] where rows contain actual
+        cell data or external hyperlinks
+    """
     final_values = []
     for val_tup in values:
         merged_list = []

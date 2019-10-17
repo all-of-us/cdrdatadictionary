@@ -1,4 +1,6 @@
-
+"""
+Set up logging for the modules involved in yaml file geneation.
+"""
 # Python imports
 import logging
 import os
@@ -10,6 +12,9 @@ import os
 def setup_logging(args):
     """
     Logging setup for the cdr_data_dictionary package.
+
+    :param args:  The command line arguments.  Of interest are the desired
+        log file path and whether to add a console logging handler.
     """
     try:
         os.makedirs(os.path.dirname(args.log_path))

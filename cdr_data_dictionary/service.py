@@ -1,3 +1,7 @@
+"""
+Module responsible for creating a connection to and reading values from google spreadsheets.
+"""
+
 # Python imports
 import logging
 import os.path
@@ -11,7 +15,7 @@ from google.auth.transport.requests import Request
 from google.oauth2 import service_account
 
 # Project imports
-import constants as consts
+from cdr_data_dictionary import constants as consts
 
 LOGGER = logging.getLogger(__name__)
 

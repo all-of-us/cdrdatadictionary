@@ -1,3 +1,11 @@
+"""
+A module to validate the generated yaml file.
+
+This modules uses a third party package, yamale, to validate the created
+yaml file against a schema defintion file.
+
+This implements a custom URL validator based on regular expressions.
+"""
 # Python imports
 from argparse import ArgumentParser
 import re
@@ -7,7 +15,7 @@ import yamale
 from yamale.validators import DefaultValidators, Validator
 
 # Project imports
-import constants as consts
+from cdr_data_dictionary import constants as consts
 
 
 class URL(Validator):
@@ -24,6 +32,12 @@ class URL(Validator):
 
 
 def validate(schema_path, dict_path):
+    """
+    Perform the yaml file validation.
+
+    :param schema_path:  The path to the schema defintion file.
+    :param dict_path:  The path to the file to validate.
+    """
     validators = DefaultValidators.copy()  # This is a dictionary
     validators[URL.tag] = URL
 
@@ -32,7 +46,13 @@ def validate(schema_path, dict_path):
     yamale.validate(schema, data)
 
 
-def _parse_command_line():
+def _parse_command_line(raw_args=None):
+    """
+    Parse the command line arguments.
+
+    :param raw_args:  If not None, the arguments to parse.  Otherwise, the
+        raw command line arguments are parsed.
+    """
     parser = ArgumentParser(
         description=(
             'Yaml file generator validator.  Can be run separately or called from '
@@ -50,7 +70,7 @@ def _parse_command_line():
                               'provided, defaults to \'out.yaml\' in the '
                               'current directory.')
                        )
-    args = parser.parse_args()
+    args = parser.parse_args(raw_args)
     return args
 
 

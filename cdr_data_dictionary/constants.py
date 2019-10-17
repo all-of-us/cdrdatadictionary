@@ -1,3 +1,7 @@
+"""
+Constant variables related to creating a yaml file from a google spreadsheet.
+"""
+
 SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets.readonly',
     'https://www.googleapis.com/auth/drive.metadata.readonly',
@@ -63,11 +67,12 @@ FILENAME_DATE_FORMAT = '%Y%m%d'
 
 # File names
 DEFAULT_LOG = 'LOGS/generate_yaml.log'
-YAML_OUTPUT_FILENAME = '../yaml_files/CDRDD_{cdr_version}_{today}.yaml'
+YAML_OUTPUT_FILENAME = 'yaml_files/CDRDD_{cdr_version}_{today}.yaml'
 
 # Regular expressions
-HYPERLINK_REGEX = '=HYPERLINK\("(?P<link>.+)","(?P<text>.+)"\)'
-URL_REGEX = '(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$'
+HYPERLINK_REGEX = r'=HYPERLINK\("(?P<link>.+)","(?P<text>.+)"\)'
+URL_REGEX = (r'(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?'
+             r'[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$')
 
 BLANK_VALUE = [u'']
 

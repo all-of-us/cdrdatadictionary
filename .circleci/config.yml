@@ -3,12 +3,12 @@ jobs:
   build:
     working_directory: ~/cdrdatadictionary
     docker:
-      - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37 
+      - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37
     steps:
       - checkout
       - run:
           name:  Installing dependencies via virtualenv
-          command: | 
+          command: |
             sudo apt-get install -y python-pip python-virtualenv
             virtualenv venv
             . venv/bin/activate
@@ -20,3 +20,14 @@ jobs:
           command: |
             source venv/bin/activate
             ./run_unit_tests.sh
+      - run:
+            name: Running errors only pylint checks on functional code
+            command: |
+                source venv/bin/activate
+                pylint **/*py --errors-only --persistent=no
+      - run:
+            name: Running full pylint checks on functional code
+            command: |
+                source venv/bin/activate
+                pylint **/*py --persistent=no
+                echo "If errors exist or the score drops below 6.0, refactor your code!"

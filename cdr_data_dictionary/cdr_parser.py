@@ -1,3 +1,7 @@
+"""
+Module responsible for reading command line arguments and instructing the package
+how to perform.
+"""
 
 # Python imports
 from argparse import ArgumentParser, ArgumentTypeError
@@ -7,7 +11,7 @@ from string import ascii_uppercase
 # Third party imports
 
 # Project imports
-import constants as consts
+from cdr_data_dictionary import constants as consts
 
 def ascii_to_index(column):
     """
@@ -33,6 +37,13 @@ def ascii_to_index(column):
 
 
 def output_filename(version):
+    """
+    Sets the output file name.
+
+    :param version:  The version of the CDR this file is generated to interpret.
+
+    :return:  The output filename and filepath.
+    """
     out = consts.YAML_OUTPUT_FILENAME
     today = datetime.now().strftime(consts.FILENAME_DATE_FORMAT)
     out = out.format(cdr_version=version, today=today)
@@ -58,15 +69,20 @@ def log_filepath(filepath):
 
 
 def parse_command_line(raw_args=None):
+    """
+    Parse the command line arguments.
+
+    :param raw_args:  If None, the raw system arguments. Else a list of
+        arguments to be passed to this parser.
+
+    :return:  A namespace object of command line arguments.
+    """
     parser = ArgumentParser(
         description=(
-            'Google drive yaml prototype.  Automatically generates a yaml file '
-            'from the read only version of the identified file.  Defaults exist '
-            'for choosing the value to group around.  See '
-            'https://developers.google.com/sheets/api/quickstart/python and '
-            'https://developers.google.com/sheets/api/guides/concepts '
-            'for information on configuring required credentials for reading '
-            'Google Drive files.'
+            'Automatically generates a yaml file '
+            'from the read only version of the cdr data dictionary.  '
+            'Output files are saved to cdrdatadictionary/yaml_files/ '
+            'with the name CDRDD_<cdr_version>_YYYYMMDD.yaml'
         )
     )
     parser.add_argument('-k', '--key-file', action='store', dest='key_file',
@@ -86,11 +102,6 @@ def parse_command_line(raw_args=None):
                         help=('Range of cells to select in the sheet.  '
                               'If not specified, returns all cell values.')
                        )
-    parser.add_argument('-o', '--output-file', action='store', dest='output_file',
-                        default='CDR.yaml',
-                        help=('Name to give the produced yaml file.  Always '
-                              'overridden, to create CDR_<version>_YYYYMMDD.yaml')
-                       )
     parser.add_argument('-g', '--group-by', action='store', default=None,
                         dest='column_id',
                         type=ascii_to_index,
@@ -101,9 +112,9 @@ def parse_command_line(raw_args=None):
                               'the title default to Column A.  Valid choices are letters A-Z.')
                        )
     parser.add_argument('-d', '--schema-file', dest='schema_file', action='store',
-                        default='schema.yaml',
+                        default='cdr_data_dictionary/schema.yaml',
                         help=('Path to the schema yaml file.  If not provided, '
-                              'defaults to \'schema.yaml\'.')
+                              'defaults to \'cdr_data_dictionary/schema.yaml\'.')
                        )
     parser.add_argument('-l', '--log-path', dest='log_path', action='store',
                         default=consts.DEFAULT_LOG, type=log_filepath,
@@ -118,7 +129,8 @@ def parse_command_line(raw_args=None):
                         help='CDR version number.  Used as part of output file name.')
     args = parser.parse_args(raw_args)
 
-    args.output_file = output_filename(args.cdr_version)
+    filename = output_filename(args.cdr_version)
+    setattr(args, 'output_file', filename)
     return args
 
 

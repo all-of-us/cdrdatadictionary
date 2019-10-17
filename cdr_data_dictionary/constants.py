@@ -3,46 +3,71 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive.metadata.readonly',
 ]
 
-INTEGER_FIELDS = [
-    'concept_id',
-    'generalized_output_concept_id',
-    'version',
-]
+# Special Field identifiers
+CONCEPT_ID_FIELD = 'concept_id'
+GENERALIZED_CONCEPT_ID_FIELD = 'generalized_output_concept_id'
+INPUT_CONCEPT_ID_FIELD = 'input_concept_id'
+VERSION = 'version'
+REGISTERED_TRANSFORM_FIELD = 'transformed_by_registered_tier_privacy_methods'
+DATE_REQUESTED_FIELD = 'date_requested'
+DATE_COMPLETED_FIELD = 'date_completed'
+CREATED_TIME_FIELD = 'created_time'
+MODIFIED_TIME_FIELD = 'modified_time'
 
-MULTIPLE_TYPES = [
-    'input_concept_id',
+INTEGER_FIELDS = [
+    CONCEPT_ID_FIELD,
+    GENERALIZED_CONCEPT_ID_FIELD,
+    INPUT_CONCEPT_ID_FIELD,
+    VERSION,
 ]
 
 BOOLEAN_FIELDS = [
-    'transformed_by_registered_tier_privacy_methods',
+    REGISTERED_TRANSFORM_FIELD,
 ]
 
 TEMPORAL_FIELDS = [
-    'date_requested',
-    'date_completed',
-    'created_time',
-    'modified_time',
+    DATE_REQUESTED_FIELD,
+    DATE_COMPLETED_FIELD,
+    CREATED_TIME_FIELD,
+    MODIFIED_TIME_FIELD,
 ]
+
+MULTIPLE_TYPES = [
+    INPUT_CONCEPT_ID_FIELD,
+]
+
+CHANGE_LOG_TAB_NAME = 'Change Log'
+AVAILABLE_FIELDS_TAB_NAME = 'Available Fields'
+TABLE_SUPPRESSIONS_TAB_NAME = 'Table Suppressions'
+FIELD_SUPPRESSIONS_TAB_NAME = 'Field (Column) Suppressions'
+CONCEPT_SUPPRESSIONS_TAB_NAME = 'Concept (Row) Suppressions'
+FIELD_GENERALIZATIONS_TAB_NAME = 'Field (Column) Generalizations'
+CONCEPT_GENERALIZATIONS_TAB_NAME = 'Concept (Row) Generalizations'
+CLEANING_CONFORMANCE_TAB_NAME = 'Cleaning & Conformance'
 
 SHEET_NAMES = [
-    'Change Log',
-    'Available Fields',
-    'Table Suppressions',
-    'Field (Column) Suppressions',
-    'Concept (Row) Suppressions',
-    'Field (Column) Generalizations',
-    'Concept (Row) Generalizations',
-    'Cleaning & Conformance',
+    CHANGE_LOG_TAB_NAME,
+    AVAILABLE_FIELDS_TAB_NAME,
+    TABLE_SUPPRESSIONS_TAB_NAME,
+    FIELD_SUPPRESSIONS_TAB_NAME,
+    CONCEPT_SUPPRESSIONS_TAB_NAME,
+    FIELD_GENERALIZATIONS_TAB_NAME,
+    CONCEPT_GENERALIZATIONS_TAB_NAME,
+    CLEANING_CONFORMANCE_TAB_NAME,
 ]
 
+# Formats
 ALL = 'all'
 DATE_FORMAT = '%Y-%m-%d'
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+FILENAME_DATE_FORMAT = '%Y%m%d'
 
+# File names
 DEFAULT_LOG = 'LOGS/generate_yaml.log'
+YAML_OUTPUT_FILENAME = '../yaml_files/CDRDD_{cdr_version}_{today}.yaml'
 
+# Regular expressions
 HYPERLINK_REGEX = '=HYPERLINK\("(?P<link>.+)","(?P<text>.+)"\)'
-
 URL_REGEX = '(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$'
 
 BLANK_VALUE = [u'']

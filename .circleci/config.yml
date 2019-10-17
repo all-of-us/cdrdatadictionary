@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/cdrdatadictionary
+    docker:
+      - image: circleci/build-image:ubuntu-14.04-XXL-upstart-1189-5614f37 
+    steps:
+      - checkout
+      - run:
+          name:  Installing dependencies via virtualenv
+          command: | 
+            sudo apt-get install -y python-pip python-virtualenv
+            virtualenv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            pip install -r dev_requirements.txt
+      - run:
+          name: Running unit tests
+          command: |
+            source venv/bin/activate
+            ./run_unit_tests.sh

@@ -1,3 +1,7 @@
+# CDR Data Dictionary to YAML Translator
+
+[![CircleCI](https://circleci.com/gh/all-of-us/cdrdatadictionary/tree/development.svg?style=svg)](https://circleci.com/gh/all-of-us/cdrdatadictionary)
+
 # Prototype YAML Generator
 
 This document will guide you through setting up the yaml generator in your environment.

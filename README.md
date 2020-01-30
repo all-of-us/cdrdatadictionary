@@ -30,18 +30,28 @@ Set up your google account credentials and API access.  This document will go th
 
 Alternatively, you may use a service account key if you prefer.
 
-### Execute the program from the command line
+### Execute the program from the command line in a unix like environment
 To execute the yaml generator:
   1.  Ensure your virtual environment is active.  `source <env_name>/bin/activate`
-  2.  To create a yaml file for a single spreadsheet, in the directory with `generate_yaml.py`, type:  `python generate_yaml.py -k <path_to_client_secret_key> -i <URL identifier of the Google Sheet> -s "<Sheet Name>" --cdr-version <CDR version spreadsheet correlates with> -c`
-  3.  To create a yaml file for all spreadsheets, type: `python generate_yaml.py -k <path_to_client_secret_key> -i <URL identifier of the Google Sheet> --cdr-version <CDR version spreadsheet correlates with> -c`
+  2.  To create a yaml file for a single spreadsheet, in the root directory, type:  `PYTHONPATH=./cdr_data_dictionary:$PYTHONPATH python cdr_data_dictionary/generate_yaml.py -k <path_to_client_secret_key> -i <URL identifier of the Google Sheet> -s "<Sheet Name>" --cdr-version <CDR version spreadsheet correlates with> -c`
+  3.  To create a yaml file for all spreadsheets, type: `PYTHONPATH=./cdr_data_dictionary:$PYTHONPATH python cdr_data_dictionary/generate_yaml.py -k <path_to_client_secret_key> -i <URL identifier of the Google Sheet> --cdr-version <CDR version spreadsheet correlates with> -c`
 
-This will generate a yaml file for the sheet identified by the URL identifier and the sheet name.  For example, if the URL of the sheet is:  https://docs.google.com/spreadsheets/d/1qDTcz5tUnEGFoZfyPPtp-2mF6U/edit, then the identifier is:  1qDTcz5tUnEGFoZfyPPtp-2mF6U.  If the document contained sheets named:  `Field Gen`, `Row Sup`, you would generate a yaml file for the `Row Sup` sheet for CDR version R1 with the command line:  `python generate_yaml.py -k <path_to_client_secret_key> -i 1qDTcz5tUnEGFoZfyPPtp-2mF6U -s "Row Sup" --cdr-version R1`
+This will generate a yaml file for the sheet identified by the URL identifier and the sheet name.  For example, if the URL of the sheet is:  https://docs.google.com/spreadsheets/d/1qDTcz5tUnEGFoZfyPPtp-2mF6U/edit, then the identifier is:  1qDTcz5tUnEGFoZfyPPtp-2mF6U.  If the document contained sheets named:  `Field Gen`, `Row Sup`, you would generate a yaml file for the `Row Sup` sheet for CDR version R1 with the command line:  `PYTHONPATH=./cdr_data_dictionary:$PYTHONPATH python cdr_data_dictionary/generate_yaml.py -k <path_to_client_secret_key> -i 1qDTcz5tUnEGFoZfyPPtp-2mF6U -s "Row Sup" --cdr-version R1`
 
-Other optional command line arguments exist and can be viewed with: `python generate_yaml.py -h`.  These optional arguments allow you to define a range of cells in the sheet to read and the column to use when grouping.
+Other optional command line arguments exist and can be viewed with: `PYTHONPATH=./cdr_data_dictionary:$PYTHONPATH python cdr_data_dictionary/generate_yaml.py -h`.  These optional arguments allow you to define a range of cells in the sheet to read and the column to use when grouping.
+
+### Execute the program from the command line in a Windows environment
+To execute the yaml generator:
+  1.  Ensure your virtual environment is active.  `source <virtual_env_name>/Scripts/activate`
+  2.  To create a yaml file for a single spreadsheet, in the root directory, type:  `PYTHONPATH=./;./cdr_data_dictionary;%PYTHONPATH% python cdr_data_dictionary/generate_yaml.py -k <path_to_client_secret_key> -i <URL identifier of the Google Sheet> -s "<Sheet Name>" --cdr-version <CDR version spreadsheet correlates with> -c`
+  3.  To create a yaml file for all spreadsheets, type: `PYTHONPATH=./;./cdr_data_dictionary;%PYTHONPATH% python cdr_data_dictionary/generate_yaml.py -k <path_to_client_secret_key> -i <URL identifier of the Google Sheet> --cdr-version <CDR version spreadsheet correlates with> -c`
+
+This will generate a yaml file for the sheet identified by the URL identifier and the sheet name.  For example, if the URL of the sheet is:  https://docs.google.com/spreadsheets/d/1qDTcz5tUnEGFoZfyPPtp-2mF6U/edit, then the identifier is:  1qDTcz5tUnEGFoZfyPPtp-2mF6U.  If the document contained sheets named:  `Field Gen`, `Row Sup`, you would generate a yaml file for the `Row Sup` sheet for CDR version R1 with the command line:  `PYTHONPATH=./;./cdr_data_dictionary;%PYTHONPATH% python cdr_data_dictionary/generate_yaml.py -k <path_to_client_secret_key> -i 1qDTcz5tUnEGFoZfyPPtp-2mF6U -s "Row Sup" --cdr-version R1`
+
+Other optional command line arguments exist and can be viewed with: `PYTHONPATH=./;./cdr_data_dictionary;%PYTHONPATH% python cdr_data_dictionary/generate_yaml.py -h`.  These optional arguments allow you to define a range of cells in the sheet to read and the column to use when grouping.
 
 ```
-(yaml_env) $ python generate_yaml.py -h
+(yaml_env) $ python cdr_data_dictionary/generate_yaml.py -h
 usage: generate_yaml.py [-h] -k KEY_FILE -i SPREADSHEET_ID [-s SHEET_NAME]
                         [-r RANGE] [-o OUTPUT_FILE] [-g COLUMN_ID]
                         [-d SCHEMA_FILE] [-l LOG_PATH] [-c] --cdr-version
@@ -87,3 +97,10 @@ optional arguments:
   --cdr-version CDR_VERSION
                         CDR version number. Used as part of output file name.
 ```
+
+### Developer Notes
+
+1.  CircleCI will run integration tests using `./run_unit_tests.sh`.
+2.  CircleCI will run pylint error checks.  If errors are encountered, the build will fail. `pylint **/*py --errors-only --persistent=no`
+3.  CircleCI will run all pylint checks.  If the pylint score drops below 6, code refactoring is recommended.  `pylint **/*py --persistent=no`
+2.  When adding a tab or updating a tab name, update `cdr_data_dictionary/schema.yaml` to use a list whose name matches the programmatically generated list name.  This generally means all characters are lower cased, spaces are replaced with underscores, and `(row)_` and `(col)_` are replaced with empty strings.

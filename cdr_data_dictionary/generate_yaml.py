@@ -16,7 +16,7 @@ from future.utils import viewitems
 # Project imports
 from cdr_data_dictionary import constants as consts
 from cdr_data_dictionary import cdr_parser
-from cdr_data_dictionary import service as service
+from cdr_data_dictionary import service
 from cdr_data_dictionary import validator
 from cdr_data_dictionary import yaml_logging
 
@@ -398,6 +398,9 @@ def _create_yaml_file(settings, tab_name, values):
         group_by = 0 if group_by is None else group_by
     elif tab_name == 'Cleaning & Conformance':
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_CLEAN_CONFORM_VALUES)
+        group_by = 0 if group_by is None else group_by
+    elif tab_name == consts.PROGRAM_CUSTOM_CONCEPT_IDS:
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_CUSTOM_CONCEPTS)
         group_by = 0 if group_by is None else group_by
     else:
         fields, values_list = sequentially_process_tab_contents(values, {})

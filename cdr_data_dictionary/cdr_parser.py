@@ -64,8 +64,8 @@ def log_filepath(filepath):
     """
     if filepath.endswith('.log'):
         return filepath
-    else:
-        raise ArgumentTypeError("Log file names must end with '.log'")
+
+    raise ArgumentTypeError("Log file names must end with '.log'")
 
 
 def parse_command_line(raw_args=None):

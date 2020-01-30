@@ -47,6 +47,7 @@ CONCEPT_SUPPRESSIONS_TAB_NAME = 'Concept (Row) Suppressions'
 FIELD_GENERALIZATIONS_TAB_NAME = 'Field (Column) Generalizations'
 CONCEPT_GENERALIZATIONS_TAB_NAME = 'Concept (Row) Generalizations'
 CLEANING_CONFORMANCE_TAB_NAME = 'Cleaning & Conformance'
+PROGRAM_CUSTOM_CONCEPT_IDS = 'Program Custom Concept IDs'
 
 SHEET_NAMES = [
     CHANGE_LOG_TAB_NAME,
@@ -57,6 +58,7 @@ SHEET_NAMES = [
     FIELD_GENERALIZATIONS_TAB_NAME,
     CONCEPT_GENERALIZATIONS_TAB_NAME,
     CLEANING_CONFORMANCE_TAB_NAME,
+    PROGRAM_CUSTOM_CONCEPT_IDS,
 ]
 
 # Formats
@@ -204,4 +206,12 @@ INIT_CLEAN_CONFORM_VALUES = {
     u'fields_affected': BLANK_VALUE,
     u'outputs': BLANK_VALUE,
     u'notes': BLANK_VALUE
+}
+
+INIT_CUSTOM_CONCEPTS = {
+    u'relevant_omop_table': BLANK_VALUE,
+    u'concept_id': BLANK_VALUE,
+    u'concept_name': BLANK_VALUE,
+    u'concept_code': BLANK_VALUE,
+    u'description': BLANK_VALUE
 }

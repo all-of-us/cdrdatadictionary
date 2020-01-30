@@ -170,22 +170,23 @@ class GenerateYAMLTest(unittest.TestCase):
              call().write('      - \n'),
              call().write('        {}:  '.format(name)),
              call().write("'phony_field'\n"),
+             call().write('        {}:  '.format(consts.CONCEPT_ID_FIELD)),
+             call().write(u'33'),
+             call().write('\n'),
+             call().write('        {}:  '.format(consts.DATE_REQUESTED_FIELD)),
+             call().write(self.today + '\n'),
              call().write('        {}:  '.format(consts.REGISTERED_TRANSFORM_FIELD)),
              call().write(True),
              call().write('\n'),
              call().write('        {}:  '.format(none_exc)),
              call().write('\n'),
-             call().write('        {}:  '.format(consts.DATE_REQUESTED_FIELD)),
-             call().write(self.today + '\n'),
              call().write('        {}:  '.format(int_exc)),
              call().write("'20'\n"),
              call().write('        {}:  '.format(false)),
-             call().write('\n'),
-             call().write('        {}:  '.format(consts.CONCEPT_ID_FIELD)),
-             call().write(u'33'),
              call().write('\n'),
              call().write('\n'),
         ]
 
         result_calls = mock_file.mock_calls[2:-1]
+
         self.assertEqual(result_calls, expected_calls)

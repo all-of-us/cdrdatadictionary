@@ -7,7 +7,8 @@ transformations: list(include('available_field'),
                       include('field_generalization'),
                       include('field_suppression'),
                       include('table_suppression'),
-                      include('clean_conformance_rules'))
+                      include('clean_conformance_rules'),
+                      include('program_custom_concepts'))
 
 ---
 available_field:
@@ -33,6 +34,9 @@ table_suppression:
 
 clean_conformance_rules:
     cleaning_&_conformance: list(include('clean_conform_item_dict'))
+
+program_custom_concepts:
+    program_custom_concept_ids: list(include('program_custom_concepts_item_dict'))
 
 meta_data_item:
     last_modifying_user_display_name: any(str(), null())
@@ -138,3 +142,10 @@ clean_conform_item_dict:
     fields_affected: any(str(), null())
     outputs: any(str(), null())
     notes: any(str(), null())
+
+program_custom_concepts_item_dict:
+    relevant_omop_table: any(list(str()), str(), null())
+    concept_id: any(list(int()), int(), null())
+    concept_name: any(list(str()), str(), null())
+    concept_code: any(str(), null())
+    description: any(list(str()), str(), null())

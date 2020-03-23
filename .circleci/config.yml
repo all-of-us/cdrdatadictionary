@@ -21,6 +21,11 @@ jobs:
             source venv/bin/activate
             ./run_unit_tests.sh
       - run:
+           name: Report coverage results
+           command: |
+             source venv/bin/activate
+             coverage report --skip-covered --show-missing
+      - run:
             name: Running errors only pylint checks on functional code
             command: |
                 source venv/bin/activate

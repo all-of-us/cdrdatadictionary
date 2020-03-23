@@ -121,7 +121,8 @@ class GenerateYAMLTest(unittest.TestCase):
         self.assertEqual(fields, expected_fields)
         self.assertEqual(concepts, expected_vals)
 
-    def test_write_yaml_file_list(self):
+    @patch('cdr_data_dictionary.generate_yaml.LOGGER')
+    def test_write_yaml_file_list(self, mock_logging):
         # pre-conditions
         today_time = self.today + " 09:45:33"
         mock_file = mock_open()
@@ -188,4 +189,6 @@ class GenerateYAMLTest(unittest.TestCase):
         ]
 
         result_calls = mock_file.mock_calls[2:-1]
+
         self.assertEqual(result_calls, expected_calls)
+        self.assertTrue(mock_logging.info.called)

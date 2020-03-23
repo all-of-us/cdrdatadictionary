@@ -68782,3 +68782,89 @@ transformations:
         data_provenance:  'PPI'
         source_ppi_module:  'The Basics, Overall Health, Lifestyle'
 
+  - 
+    program_custom_concept_ids:
+      - 
+        relevant_omop_table:  'metadata'
+        concept_id:  2000000000
+        concept_name:  'AoU_General'
+        concept_code:  'AOU generated'
+        description:  'Generic generalized value; not currently in use.'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000001
+        concept_name:  'Another single population'
+        concept_code:  'WhatRaceEthnicity_GeneralizedPopulation'
+        description:  'Generalized value for response to Race/Ethnicity where either "Native Hawaiian or Pacific Islander" or "Middle Eastern or North African" is selected with no other value (other than Hispanic, which is stored separately).'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000002
+        concept_name:  'Not man only, not woman only, prefer not to answer, or skipped'
+        concept_code:  'GenderIdentity_GeneralizedDiffGender'
+        description:  'Generalized value for a response to Gender Identity that is anything except a single response of "Man" or "Woman". This includes responses of "Transgender", etc. Does not include prefer not to answer or skipped responses.'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000003
+        concept_name:  'Non-straight orientation, prefer not to answer, or skipped'
+        concept_code:  'SexualOrientation_GeneralizedNotStraight'
+        description:  'Generalized value for a response to Sexual Orientation that is anything except a response of "Straight" on its own. This includes responses of "Bisexual", etc. Does not include prefer not to answer or skipped responses.'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000004
+        concept_name:  'Employed for wages or self-employed'
+        concept_code:  'EmploymentStatus_GeneralizedEmployed'
+        description:  'Generalized value for employment status where participant is currently employed for wages - part time or full time work, for example - or is self-employed.'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000005
+        concept_name:  'Not currently employed for wages'
+        concept_code:  'EmploymentStatus_GeneralizedNotEmployed'
+        description:  'Generalized value for employment status where participant is a student, homemaker, retired, unable to work, or currently out of work.'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000006
+        concept_name:  'College graduate or advanced degree'
+        concept_code:  'HighestGrade_GeneralizedCollegeAndAbove'
+        description:  'Generalized value for when the participant''s education level is equal to college graduate or advanced degree.'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000007
+        concept_name:  'Less than a high school degree or equivalent'
+        concept_code:  'HighestGrade_GeneralizedNoHighSchoolDegree'
+        description:  'Generalized value for when the participant''s education is less than high school degree or equivalent (completed through grade school or only some high school).'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000008
+        concept_name:  'More than one population'
+        concept_code:  'WhatRaceEthnicity_GeneralizedMultPopulations'
+        description:  'Generalized value for when muiltiple populations (excluding Hispanic, which is stored separately) are selected.'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000009
+        concept_name:  'Not male, not female, prefer not to answer, or skipped'
+        concept_code:  'SexAtBirth_GeneralizedDiffSex'
+        description:  'Generalized value for Sex at Birth where response is anything except a single response of "Male" or "Female". May include intersex, etc. Does include prefer not to answer or skipped responses.'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000010
+        concept_name:  'Response removed due to invalid value'
+        concept_code:  'AoUDRC_ResponseRemoval'
+        description:  'Value for when the response was removed due to an invalid value (an implausible response value, for example). This is applied to some free-numeric PPI responses, for example questions related to frequency of smoking.'
+
+      - 
+        relevant_omop_table:  'observation'
+        concept_id:  2000000011
+        concept_name:  'State information suppressed for privacy'
+        concept_code:  'AoUDRC_GeneralizedState'
+        description:  'Generalized value for the participant''s state of residence; set to this value when the participant''s state of residence is different from the state of their paired All of Us consortium site OR there are fewer than 200 participants from that state'
+

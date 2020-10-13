@@ -77,9 +77,9 @@ def _process_value(value):
         result = result.strip()
         # replacing new line values with a constant to make list
         # generation easier
-        result = result.replace('\r\n', consts.NEWLINE )
-        result = result.replace('\n', consts.NEWLINE )
-        result = result.replace('\r', consts.NEWLINE )
+        result = result.replace('\r\n', consts.NEWLINE)
+        result = result.replace('\n', consts.NEWLINE)
+        result = result.replace('\r', consts.NEWLINE)
         # in yaml, single quotes are represented as ''
         # inside a string surrounded by single quotes
         result = result.replace("'", "''")

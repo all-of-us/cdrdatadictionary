@@ -8,14 +8,15 @@ transformations: list(include('available_field'),
                       include('field_suppression'),
                       include('table_suppression'),
                       include('clean_conformance_rules'),
-                      include('program_custom_concepts'))
+                      include('program_custom_concepts'),
+                      include('wearables_data'))
 
 ---
 available_field:
     available_fields: list(include('available_field_item'))
 
 change_logs:
-    change_log: list(include('change_item_dict'))
+    change_log: any(null(), list(include('change_item_dict')))
 
 concept_generalization:
     concept_generalizations: list(include('concept_gen_item'))
@@ -38,6 +39,9 @@ clean_conformance_rules:
 program_custom_concepts:
     program_custom_concept_ids: list(include('program_custom_concepts_item_dict'))
 
+wearables_data:
+    wearables: list(include('wearable_item_dict'))
+
 meta_data_item:
     last_modifying_user_display_name: any(str(), null())
     name: any(str(), null())
@@ -56,11 +60,11 @@ available_field_item:
     field_type: any(list(str()), str(), null())
     data_provenance: any(list(str()), str(), null())
     source_ppi_module: any(list(str()), str(), null())
-    transformed_by_registered_tier_privacy_methods: any(list(bool(), null()), bool(), null())
+    transformed_by_registered_tier_privacy_methods: bool()
     transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
-    additional_notes: any(str(), null())
-    transformation_applied_(registered_tier): any(null(), bool())
-    transformation_applied_(controlled_tier): any(null(), bool())
+    additional_notes: any(list(str()), str(), null())
+    transformation_applied_(registered_tier): any(bool(), null())
+    transformation_applied_(controlled_tier): any(bool(), null())
     data_cleaning_rule_(cdr_clean): any(null(), str())
 
 concept_sup_item:
@@ -71,11 +75,11 @@ concept_sup_item:
     data_provenance: any(list(str()), str(), null())
     source_ppi_module: any(list(str()), str(), null())
     transformation_applied_in_registered_tier: any(list(str()), str(), null())
-    transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
-    transformation_applied_(controlled_tier): any(null(), bool())
+    transformed_by_privacy_methodology_(controlled_tier): any(null(), bool())
+    transformation_applied_(controlled_tier): any(bool(), null())
     privacy_output_in_registered_tier: any(list(str()), str(), null())
     data_cleaning_rule_(cdr_clean): any(null(), str())
-    additional_notes: any(str(), null())
+    additional_notes: any(list(str()), str(), null())
 
 concept_gen_item:
     concept_id: any(list(int()), int(), null())
@@ -87,13 +91,13 @@ concept_gen_item:
     transformation_applied_in_registered_tier: any(list(str()), str(), null())
     registered_tier_transformation_description: any(list(str()), str(), null())
     fields_affected: any(list(str()), str(), null(), required=False)
-    input_concept_id: any(url(), list(url()), list(int()), int() ,null(), required=False)
+    input_concept_id: any(url(), list(url()), list(int()), int(), null(), required=False)
     input_concept_name: any(list(str()), str(), null(), required=False)
     generalized_output_concept_id: any(list(int()), int(), null(), required=False)
     generalized_output_concept_name: any(list(str()), str(), null(), required=False)
     additional_notes: any(list(str()), str(), null(), required=False)
     transformation_applied_in_controlled_tier: any(list(str()), str(), null(), required=False)
-    transformation_applied_(controlled_tier): any(null(), bool())
+    transformation_applied_(controlled_tier): any(bool(), null())
     transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
     data_cleaning_rule_cdr_clean: any(list(str()), str(), null(), required=False)
 
@@ -105,26 +109,26 @@ field_item:
     field_type: any(list(str()), str(), null())
     data_provenance: any(list(str()), str(), null())
     source_ppi_module: any(list(str()), str(), null())
-    transformed_by_registered_tier_privacy_methods: any(bool(), null())
+    transformed_by_registered_tier_privacy_methods: bool()
     transformation_applied_in_registered_tier: any(list(str()), str(), null())
     privacy_output_in_registered_tier: any(list(str()), str(), null())
-    transformation_applied_(controlled_tier): any(null(), bool())
+    transformation_applied_(controlled_tier): any(bool(), null())
     transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
     data_cleaning_rule_(cdr_clean): any(null(), str())
-    additional_notes: any(str(), null())
+    additional_notes: any(list(str()), str(), null())
 
 table_sup_item:
     relevant_omop_table: any(list(str()), str(), null())
     omop_cdm_standard_or_custom_field: any(list(str()), str(), null())
     description: any(list(str()), str(), null())
     data_provenance: any(list(str()), str(), null())
-    transformed_by_registered_tier_privacy_methods: any(bool(), null())
+    transformed_by_registered_tier_privacy_methods: bool()
     transformation_applied_in_registered_tier: any(list(str()), str(), null())
     privacy_output_in_registered_tier: any(list(str()), str(), null())
-    transformation_applied_(controlled_tier): any(null(), bool())
+    transformation_applied_(controlled_tier): any(bool(), null())
     transformed_by_privacy_methodology_(controlled_tier): any(bool(), null())
     data_cleaning_rule_(cdr_clean): any(null(), str())
-    additional_notes: any(str(), null())
+    additional_notes: any(list(str()), str(), null())
 
 change_item_dict:
     change_number: any(list(str()), str(), null())
@@ -138,9 +142,9 @@ clean_conform_item_dict:
     rule_name: any(str(), url(), null())
     rule_description: any(str(), null())
     cdr_impacted: any(str(), null())
-    tables_affected: any(str(), null())
-    fields_affected: any(str(), null())
-    outputs: any(str(), null())
+    tables_affected: any(list(str()), str(), null())
+    fields_affected: any(list(str()), str(), null())
+    outputs: any(list(str()), str(), null())
     notes: any(str(), null())
 
 program_custom_concepts_item_dict:
@@ -149,3 +153,11 @@ program_custom_concepts_item_dict:
     concept_name: any(list(str()), str(), null())
     concept_code: any(str(), null())
     description: any(list(str()), str(), null())
+
+wearable_item_dict:
+    table: any(str())
+    level: any(str())
+    field: any(str())
+    data_type: any(str())
+    affected_by_privacy_methodology: bool()
+    transformation: any(str(), list(str()), null())

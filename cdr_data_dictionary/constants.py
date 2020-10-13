@@ -7,6 +7,8 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive.metadata.readonly',
 ]
 
+NEWLINE = ' <NEWLINE> '
+
 # Special Field identifiers
 CONCEPT_ID_FIELD = 'concept_id'
 GENERALIZED_CONCEPT_ID_FIELD = 'generalized_output_concept_id'
@@ -17,6 +19,7 @@ DATE_REQUESTED_FIELD = 'date_requested'
 DATE_COMPLETED_FIELD = 'date_completed'
 CREATED_TIME_FIELD = 'created_time'
 MODIFIED_TIME_FIELD = 'modified_time'
+AFFECTED_BY_PRIVACY_METHODOLOGY_FIELD = 'affected_by_privacy_methodology'
 
 INTEGER_FIELDS = [
     CONCEPT_ID_FIELD,
@@ -26,6 +29,7 @@ INTEGER_FIELDS = [
 
 BOOLEAN_FIELDS = [
     REGISTERED_TRANSFORM_FIELD,
+    AFFECTED_BY_PRIVACY_METHODOLOGY_FIELD,
 ]
 
 TEMPORAL_FIELDS = [
@@ -47,7 +51,8 @@ CONCEPT_SUPPRESSIONS_TAB_NAME = 'Concept (Row) Suppressions'
 FIELD_GENERALIZATIONS_TAB_NAME = 'Field (Column) Generalizations'
 CONCEPT_GENERALIZATIONS_TAB_NAME = 'Concept (Row) Generalizations'
 CLEANING_CONFORMANCE_TAB_NAME = 'Cleaning & Conformance'
-PROGRAM_CUSTOM_CONCEPT_IDS = 'Program Custom Concept IDs'
+PROGRAM_CUSTOM_CONCEPT_IDS_TAB_NAME = 'Program Custom Concept IDs'
+WEARABLES_TAB_NAME = 'Wearables'
 
 SHEET_NAMES = [
     CHANGE_LOG_TAB_NAME,
@@ -58,7 +63,8 @@ SHEET_NAMES = [
     FIELD_GENERALIZATIONS_TAB_NAME,
     CONCEPT_GENERALIZATIONS_TAB_NAME,
     CLEANING_CONFORMANCE_TAB_NAME,
-    PROGRAM_CUSTOM_CONCEPT_IDS,
+    PROGRAM_CUSTOM_CONCEPT_IDS_TAB_NAME,
+    WEARABLES_TAB_NAME,
 ]
 
 # Formats
@@ -76,142 +82,151 @@ HYPERLINK_REGEX = r'=HYPERLINK\("(?P<link>.+)","(?P<text>.+)"\)'
 URL_REGEX = (r'(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?'
              r'[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$')
 
-BLANK_VALUE = [u'']
+BLANK_VALUE = ['']
 
 INIT_META_DATA_VALUES = {
-    u'last_modifying_user_display_name': None,
-    u'name': None,
-    u'last_modifying_user_email_address': None,
-    u'modified_time': None,
-    u'version': None,
-    u'created_time': None,
-    u'id': None,
-    u'cdr_version': None
+    'last_modifying_user_display_name': None,
+    'name': None,
+    'last_modifying_user_email_address': None,
+    'modified_time': None,
+    'version': None,
+    'created_time': None,
+    'id': None,
+    'cdr_version': None
 }
 
 INIT_AVAILABLE_FIELDS_VALUES = {
-    u'relevant_omop_table': BLANK_VALUE,
-    u'field_name': BLANK_VALUE,
-    u'omop_cdm_standard_or_custom_field': BLANK_VALUE,
-    u'description': BLANK_VALUE,
-    u'field_type': BLANK_VALUE,
-    u'data_provenance': BLANK_VALUE,
-    u'source_ppi_module': BLANK_VALUE,
-    u'transformed_by_registered_tier_privacy_methods': BLANK_VALUE,
-    u'transformation_applied_(registered_tier)': BLANK_VALUE,
-    u'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
-    u'transformation_applied_(controlled_tier)': BLANK_VALUE,
-    u'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
-    u'additional_notes': BLANK_VALUE
+    'relevant_omop_table': BLANK_VALUE,
+    'field_name': BLANK_VALUE,
+    'omop_cdm_standard_or_custom_field': BLANK_VALUE,
+    'description': BLANK_VALUE,
+    'field_type': BLANK_VALUE,
+    'data_provenance': BLANK_VALUE,
+    'source_ppi_module': BLANK_VALUE,
+    'transformed_by_registered_tier_privacy_methods': BLANK_VALUE,
+    'transformation_applied_(registered_tier)': BLANK_VALUE,
+    'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
+    'transformation_applied_(controlled_tier)': BLANK_VALUE,
+    'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
+    'additional_notes': BLANK_VALUE
 }
 
 INIT_CHANGE_LOG_VALUES = {
-    u'change_number': BLANK_VALUE,
-    u'change_description': BLANK_VALUE,
-    u'date_requested': BLANK_VALUE,
-    u'date_completed': BLANK_VALUE,
-    u'cdr_version': BLANK_VALUE,
-    u'completed_by': BLANK_VALUE
+    'change_number': BLANK_VALUE,
+    'change_description': BLANK_VALUE,
+    'date_requested': BLANK_VALUE,
+    'date_completed': BLANK_VALUE,
+    'cdr_version': BLANK_VALUE,
+    'completed_by': BLANK_VALUE
 }
 
 INIT_ROW_GENERALIZATIONS = {
-    u'relevant_omop_table': BLANK_VALUE,
-    u'field_name': BLANK_VALUE,
-    u'concept_name': BLANK_VALUE,
-    u'concept_id': BLANK_VALUE,
-    u'data_provenance': BLANK_VALUE,
-    u'source_ppi_module': BLANK_VALUE,
-    u'transformation_applied_in_registered_tier': BLANK_VALUE,
-    u'registered_tier_transformation_description': BLANK_VALUE,
-    u'fields_affected': BLANK_VALUE,
-    u'input_concept_id': BLANK_VALUE,
-    u'input_concept_name': BLANK_VALUE,
-    u'generalized_output_concept_id': BLANK_VALUE,
-    u'generalized_output_concept_name': BLANK_VALUE,
-    u'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
-    u'transformation_applied_(controlled_tier)': BLANK_VALUE,
-    u'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
-    u'additional_notes': BLANK_VALUE
+    'relevant_omop_table': BLANK_VALUE,
+    'field_name': BLANK_VALUE,
+    'concept_name': BLANK_VALUE,
+    'concept_id': BLANK_VALUE,
+    'data_provenance': BLANK_VALUE,
+    'source_ppi_module': BLANK_VALUE,
+    'transformation_applied_in_registered_tier': BLANK_VALUE,
+    'registered_tier_transformation_description': BLANK_VALUE,
+    'fields_affected': BLANK_VALUE,
+    'input_concept_id': BLANK_VALUE,
+    'input_concept_name': BLANK_VALUE,
+    'generalized_output_concept_id': BLANK_VALUE,
+    'generalized_output_concept_name': BLANK_VALUE,
+    'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
+    'transformation_applied_(controlled_tier)': BLANK_VALUE,
+    'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
+    'additional_notes': BLANK_VALUE
 }
 
 INIT_ROW_SUPPRESSIONS = {
-    u'relevant_omop_table': BLANK_VALUE,
-    u'field_name': BLANK_VALUE,
-    u'concept_name': BLANK_VALUE,
-    u'concept_id': BLANK_VALUE,
-    u'data_provenance': BLANK_VALUE,
-    u'source_ppi_module': BLANK_VALUE,
-    u'transformation_applied_in_registered_tier': BLANK_VALUE,
-    u'privacy_output_in_registered_tier': BLANK_VALUE,
-    u'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
-    u'transformation_applied_(controlled_tier)': BLANK_VALUE,
-    u'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
-    u'additional_notes': BLANK_VALUE
+    'relevant_omop_table': BLANK_VALUE,
+    'field_name': BLANK_VALUE,
+    'concept_name': BLANK_VALUE,
+    'concept_id': BLANK_VALUE,
+    'data_provenance': BLANK_VALUE,
+    'source_ppi_module': BLANK_VALUE,
+    'transformation_applied_in_registered_tier': BLANK_VALUE,
+    'privacy_output_in_registered_tier': BLANK_VALUE,
+    'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
+    'transformation_applied_(controlled_tier)': BLANK_VALUE,
+    'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
+    'additional_notes': BLANK_VALUE
 }
 
 INIT_COL_GENERALIZATIONS = {
-    u'relevant_omop_table': BLANK_VALUE,
-    u'field_name': BLANK_VALUE,
-    u'omop_cdm_standard_or_custom_field': BLANK_VALUE,
-    u'description': BLANK_VALUE,
-    u'field_type': BLANK_VALUE,
-    u'data_provenance': BLANK_VALUE,
-    u'source_ppi_module': BLANK_VALUE,
-    u'transformed_by_registered_tier_privacy_methods': BLANK_VALUE,
-    u'transformation_applied_in_registered_tier': BLANK_VALUE,
-    u'privacy_output_in_registered_tier': BLANK_VALUE,
-    u'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
-    u'transformation_applied_(controlled_tier)': BLANK_VALUE,
-    u'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
-    u'additional_notes': BLANK_VALUE
+    'relevant_omop_table': BLANK_VALUE,
+    'field_name': BLANK_VALUE,
+    'omop_cdm_standard_or_custom_field': BLANK_VALUE,
+    'description': BLANK_VALUE,
+    'field_type': BLANK_VALUE,
+    'data_provenance': BLANK_VALUE,
+    'source_ppi_module': BLANK_VALUE,
+    'transformed_by_registered_tier_privacy_methods': BLANK_VALUE,
+    'transformation_applied_in_registered_tier': BLANK_VALUE,
+    'privacy_output_in_registered_tier': BLANK_VALUE,
+    'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
+    'transformation_applied_(controlled_tier)': BLANK_VALUE,
+    'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
+    'additional_notes': BLANK_VALUE
 }
 
 INIT_COL_SUPPRESSIONS = {
-    u'relevant_omop_table': BLANK_VALUE,
-    u'field_name': BLANK_VALUE,
-    u'omop_cdm_standard_or_custom_field': BLANK_VALUE,
-    u'description': BLANK_VALUE,
-    u'field_type': BLANK_VALUE,
-    u'data_provenance': BLANK_VALUE,
-    u'source_ppi_module': BLANK_VALUE,
-    u'transformed_by_registered_tier_privacy_methods': BLANK_VALUE,
-    u'transformation_applied_in_registered_tier': BLANK_VALUE,
-    u'privacy_output_in_registered_tier': BLANK_VALUE,
-    u'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
-    u'transformation_applied_(controlled_tier)': BLANK_VALUE,
-    u'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
-    u'additional_notes': BLANK_VALUE
+    'relevant_omop_table': BLANK_VALUE,
+    'field_name': BLANK_VALUE,
+    'omop_cdm_standard_or_custom_field': BLANK_VALUE,
+    'description': BLANK_VALUE,
+    'field_type': BLANK_VALUE,
+    'data_provenance': BLANK_VALUE,
+    'source_ppi_module': BLANK_VALUE,
+    'transformed_by_registered_tier_privacy_methods': BLANK_VALUE,
+    'transformation_applied_in_registered_tier': BLANK_VALUE,
+    'privacy_output_in_registered_tier': BLANK_VALUE,
+    'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
+    'transformation_applied_(controlled_tier)': BLANK_VALUE,
+    'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
+    'additional_notes': BLANK_VALUE
 }
 
 
 INIT_TABLE_SUPPRESSIONS = {
-    u'relevant_omop_table': BLANK_VALUE,
-    u'omop_cdm_standard_or_custom_field': BLANK_VALUE,
-    u'description': BLANK_VALUE,
-    u'data_provenance': BLANK_VALUE,
-    u'transformed_by_registered_tier_privacy_methods': BLANK_VALUE,
-    u'transformation_applied_in_registered_tier': BLANK_VALUE,
-    u'privacy_output_in_registered_tier': BLANK_VALUE,
-    u'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
-    u'transformation_applied_(controlled_tier)': BLANK_VALUE,
-    u'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
-    u'additional_notes': BLANK_VALUE
+    'relevant_omop_table': BLANK_VALUE,
+    'omop_cdm_standard_or_custom_field': BLANK_VALUE,
+    'description': BLANK_VALUE,
+    'data_provenance': BLANK_VALUE,
+    'transformed_by_registered_tier_privacy_methods': BLANK_VALUE,
+    'transformation_applied_in_registered_tier': BLANK_VALUE,
+    'privacy_output_in_registered_tier': BLANK_VALUE,
+    'transformed_by_privacy_methodology_(controlled_tier)': BLANK_VALUE,
+    'transformation_applied_(controlled_tier)': BLANK_VALUE,
+    'data_cleaning_rule_(cdr_clean)': BLANK_VALUE,
+    'additional_notes': BLANK_VALUE
 }
 
 INIT_CLEAN_CONFORM_VALUES = {
-    u'rule_name': BLANK_VALUE,
-    u'rule_description': BLANK_VALUE,
-    u'cdr_impacted': BLANK_VALUE,
-    u'tables_affected': BLANK_VALUE,
-    u'fields_affected': BLANK_VALUE,
-    u'outputs': BLANK_VALUE,
-    u'notes': BLANK_VALUE
+    'rule_name': BLANK_VALUE,
+    'rule_description': BLANK_VALUE,
+    'cdr_impacted': BLANK_VALUE,
+    'tables_affected': BLANK_VALUE,
+    'fields_affected': BLANK_VALUE,
+    'outputs': BLANK_VALUE,
+    'notes': BLANK_VALUE
 }
 
 INIT_CUSTOM_CONCEPTS = {
-    u'relevant_omop_table': BLANK_VALUE,
-    u'concept_id': BLANK_VALUE,
-    u'concept_name': BLANK_VALUE,
-    u'concept_code': BLANK_VALUE,
-    u'description': BLANK_VALUE
+    'relevant_omop_table': BLANK_VALUE,
+    'concept_id': BLANK_VALUE,
+    'concept_name': BLANK_VALUE,
+    'concept_code': BLANK_VALUE,
+    'description': BLANK_VALUE
+}
+
+INIT_WEARABLES = {
+    'table': BLANK_VALUE,
+    'level': BLANK_VALUE,
+    'field': BLANK_VALUE,
+    'data_type': BLANK_VALUE,
+    'affected_by_privacy_methodology': BLANK_VALUE,
+    'transformation': BLANK_VALUE,
 }

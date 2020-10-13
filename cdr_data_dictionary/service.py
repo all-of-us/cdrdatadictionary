@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Module responsible for creating a connection to and reading values from google spreadsheets.
 """

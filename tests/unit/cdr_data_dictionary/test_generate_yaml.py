@@ -100,30 +100,10 @@ class GenerateYAMLTest(unittest.TestCase):
         self.assertEqual(fields, expected_fields)
         self.assertEqual(concepts, expected_vals)
 
-    def test_process_tab_contents(self):
-        # pre-conditions
-        values = [
-            ['field One', 'field Two', 'Field Three'],
-            ['val_one', 'val_two', 'val_three'],
-            ['val_four', 'val_five', 'val_six'],
-        ]
-
-        #test
-        fields, concepts = gen.process_tab_contents(values, 1)
-
-        # post conditions
-        expected_fields = ['field_one', 'field_two', 'field_three']
-        expected_vals = {
-            'val_two': {'field_one': ['val_one'], 'field_three': ['val_three']},
-            'val_five': {'field_one': ['val_four'], 'field_three': ['val_six']}
-        }
-
-        self.assertEqual(fields, expected_fields)
-        self.assertEqual(concepts, expected_vals)
-
     @patch('cdr_data_dictionary.generate_yaml.LOGGER')
     def test_write_yaml_file_list(self, mock_logging):
         # pre-conditions
+        self.maxDiff = None
         today_time = self.today + " 09:45:33"
         mock_file = mock_open()
         meta_data = {
@@ -152,7 +132,7 @@ class GenerateYAMLTest(unittest.TestCase):
         index = 3
 
         # test
-        with patch('cdr_data_dictionary.generate_yaml.open', mock_file):
+        with patch('cdr_data_dictionary.generate_yaml.codecs.open', mock_file):
             gen.write_yaml_file(mock_file, meta_data, [fields], [values], [sequence_name], [index])
 
         # post conditions
@@ -181,7 +161,7 @@ class GenerateYAMLTest(unittest.TestCase):
              call().write('        {}:  '.format(int_exc)),
              call().write("'20'\n"),
              call().write('        {}:  '.format(false)),
-             call().write('\n'),
+             call().write('False\n'),
              call().write('        {}:  '.format(consts.CONCEPT_ID_FIELD)),
              call().write(u'33'),
              call().write('\n'),

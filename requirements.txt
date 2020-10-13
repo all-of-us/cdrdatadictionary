@@ -4,4 +4,4 @@ google-auth-httplib2
 google-auth-oauthlib
 pylint
 python-dateutil
-yamale
+yamale=2.*

@@ -4,6 +4,7 @@ Designed specifically for use with the CDR Data Dictionary.
 This is an entry point.
 """
 # Python imports
+import codecs
 import copy
 import logging
 import re
@@ -74,14 +75,20 @@ def _process_value(value):
 
     if result:
         result = result.strip()
-        result = result.replace('\n', ',  ')
+        # replacing new line values with a constant to make list
+        # generation easier
+        result = result.replace('\r\n', consts.NEWLINE )
+        result = result.replace('\n', consts.NEWLINE )
+        result = result.replace('\r', consts.NEWLINE )
+        # in yaml, single quotes are represented as ''
+        # inside a string surrounded by single quotes
         result = result.replace("'", "''")
         result = result.strip()
 
-        if result.lower() == 'yes':
+        if result.lower() in ['yes', 'y', 'true', 't']:
             return True
 
-        if result.lower() == 'no':
+        if result.lower() in ['no', 'n', 'false', 'f']:
             return False
 
     return result
@@ -137,35 +144,24 @@ def sequentially_process_tab_contents(values, init_fields=None):
     return fields, concepts
 
 
-def process_tab_contents(values, id_index):
+def _get_list_value(value):
     """
-    Helper method to clean and organize tab values.
+    Turn a list of values into a string to write to a yaml file.
 
-    :param values:  list of values read from the tab.  each row is a list of
-        values where each list item corresponds to a row.
-    :param id_index:  integer value identifying which column is used to group
-        the values as each row is processed.  used to build a dictionary of
-        values where the key is based on the value of the items in the
-        id_index column
+    :param value:  The value to possibly format as a list.
 
-    :return:  A tuple for each tab.  The dictionary of concepts is arranged
-        around the field at id_index.  For each unique value in the column
-        identified by id_index, it returns a dictionary of all the other
-        fields and associated values.
-        (A list of fields, A dictionary of concepts)
+    :returns: Either the unchanged value, or a string looking like a python
+        list.
     """
-    fields = _process_field_names(values[0])
-    concepts = {}
-    for value in values[1:]:
-        existing_values = concepts.get(value[id_index], {})
-        new_dict = {}
-        for index, val in enumerate(value):
-            if index == id_index:
-                continue
-            new_value = append_to_results(fields[index], val, existing_values)
-            new_dict[fields[index]] = new_value
-        concepts[value[id_index]] = new_dict
-    return fields, concepts
+    result = value
+    if consts.NEWLINE in value:
+        split_values = value.split(consts.NEWLINE)
+        result = [val for val in split_values if not val.isspace()]
+        result = ["'" + val + "'" if not val.isdigit() else val for val in result]
+        result = ', '.join(result)
+        result = ''.join(['[', result, ']'])
+
+    return result
 
 
 def _write_value(yaml_writer, field_name, value):
@@ -177,40 +173,43 @@ def _write_value(yaml_writer, field_name, value):
         It is used to determine how to write the value.
     :param value:  The processed value to write.
     """
-    if value:
-        try:
-            if field_name in consts.INTEGER_FIELDS or field_name in consts.BOOLEAN_FIELDS:
-                yaml_writer.write(value)
+    try:
+        if field_name in consts.INTEGER_FIELDS or field_name in consts.BOOLEAN_FIELDS:
+            yaml_writer.write(value)
+            yaml_writer.write('\n')
+        elif field_name in consts.MULTIPLE_TYPES:
+            try:
+                int_value = int(value)
+                yaml_writer.write(int_value)
                 yaml_writer.write('\n')
-            elif field_name in consts.MULTIPLE_TYPES:
-                try:
-                    int_value = int(value)
-                    yaml_writer.write(int_value)
-                    yaml_writer.write('\n')
-                except ValueError:
-                    yaml_writer.write("'" + value + "'\n")
-            elif field_name in consts.TEMPORAL_FIELDS:
-                date = dt_parser.parse(value)
-                if 'time' in field_name:
-                    dt_str = date.strftime(consts.DATETIME_FORMAT)
-                elif 'date' in field_name:
-                    dt_str = date.strftime(consts.DATE_FORMAT)
-                yaml_writer.write(dt_str + "\n")
-            else:
-                yaml_writer.write("'" + value + "'\n")
-        except IndexError:
-            LOGGER.exception("can't write value for field %s", field_name)
-            yaml_writer.write('  IndexError - cant write this value\n')
-        except UnicodeEncodeError:
-            LOGGER.exception("can't write value for field %s", field_name)
-            yaml_writer.write('  UnicodeEncodeError - cant write this value\n')
-        except UnicodeDecodeError:
-            LOGGER.exception("can't write value for field %s", field_name)
-            yaml_writer.write('  UnicodeDecodeError - cant write this value\n')
-        except TypeError:
-            yaml_writer.write(str(value) + '\n')
-    else:
-        yaml_writer.write('\n')
+            except ValueError:
+                value = _get_list_value(value)
+                yaml_writer.write(value)
+                yaml_writer.write("\n")
+        elif field_name in consts.TEMPORAL_FIELDS:
+            date = dt_parser.parse(value)
+            if 'time' in field_name:
+                dt_str = date.strftime(consts.DATETIME_FORMAT)
+            elif 'date' in field_name:
+                dt_str = date.strftime(consts.DATE_FORMAT)
+            yaml_writer.write(dt_str + "\n")
+        elif consts.NEWLINE in value:
+            value = _get_list_value(value)
+            yaml_writer.write(value)
+            yaml_writer.write("\n")
+        else:
+            yaml_writer.write("'" + value + "'\n")
+    except IndexError:
+        LOGGER.exception("can't write value for field %s", field_name)
+        yaml_writer.write('  IndexError - cant write this value\n')
+    except UnicodeEncodeError:
+        LOGGER.exception("can't write value for field %s", field_name)
+        yaml_writer.write('  UnicodeEncodeError - cant write this value\n')
+    except UnicodeDecodeError:
+        LOGGER.exception("can't write value for field %s", field_name)
+        yaml_writer.write('  UnicodeDecodeError - cant write this value\n')
+    except TypeError:
+        yaml_writer.write(str(value) + '\n')
 
 
 def _write_meta_data(yaml_writer, meta_data):
@@ -242,7 +241,7 @@ def write_yaml_file(filepath, meta_data, fields, values_container, sequence_name
     :param index:  identifier for the column grouped by. Identifies the first
         field that will be written for each dictionary item.
     """
-    with open(filepath, 'w') as yaml:
+    with codecs.open(filepath, 'w', encoding='utf-8') as yaml:
         # write the meta data
         _write_meta_data(yaml, meta_data)
         yaml.write('\n')
@@ -253,13 +252,7 @@ def write_yaml_file(filepath, meta_data, fields, values_container, sequence_name
             LOGGER.info("Writing transformations for: %s", sequence_name[list_index])
             yaml.write('  - \n    ' + sequence_name[list_index] + ':\n')
 
-            if isinstance(values_container[list_index], dict):
-                _write_yaml_dict(yaml,
-                                 fields[list_index],
-                                 values_container[list_index],
-                                 index[list_index]
-                                )
-            elif isinstance(values_container[list_index], list):
+            if isinstance(values_container[list_index], list):
                 _write_yaml_list(yaml,
                                  fields[list_index],
                                  values_container[list_index],
@@ -274,7 +267,7 @@ def _write_yaml_list(yaml, fields, value_list, index):
     grouping_field = fields[index]
 
     for value_dict in value_list:
-        yaml.write('      - \n')   # marks this as a sequence
+        yaml.write('      - \n')   # marks this as a yaml sequence
         yaml.write('        ' + grouping_field + ":  ")
 
         grouping_value = value_dict.get(fields[index])[0]
@@ -289,44 +282,10 @@ def _write_yaml_list(yaml, fields, value_list, index):
                 continue
             yaml.write('        ' + key + ':  ')
             sub_value = _process_value(value[0])
-            if sub_value:
+            if sub_value or isinstance(sub_value, bool):
                 _write_value(yaml, key, sub_value)
             else:
                 yaml.write('\n')
-
-        yaml.write('\n')
-
-
-def _write_yaml_dict(yaml, fields, value_dict, index):
-    """
-    Write a dictionary to yaml file format.
-    """
-    for key, value in viewitems(value_dict):
-        key = _process_value(key)
-        if key is None or key.isspace() or not key:
-            continue
-        yaml.write('      - \n')   # marks this as a sequence
-        yaml.write('        ' + fields[index] + ":  ")
-        if fields[index] in consts.INTEGER_FIELDS or fields[index] in consts.BOOLEAN_FIELDS:
-            yaml.write(key)
-            yaml.write('\n')
-        else:
-            yaml.write("'" + key + "'\n")
-        for sub_key, sub_value in viewitems(value):
-            yaml.write('        ' + sub_key + ':  ')
-            if len(sub_value) > 1:  # more than one item, write an array/seq
-                yaml.write('\n')
-                for val in sub_value:
-                    val = _process_value(val)
-                    if val:
-                        yaml.write('          - ')
-                        _write_value(yaml, sub_key, val)
-            else:
-                sub_value = _process_value(sub_value[0])
-                if sub_value:
-                    _write_value(yaml, sub_key, sub_value)
-                else:
-                    yaml.write('\n')
 
         yaml.write('\n')
 
@@ -375,32 +334,35 @@ def _create_yaml_file(settings, tab_name, values):
     sequence_title = _get_sequence_title(tab_name)
     group_by = settings.column_id
 
-    if tab_name == 'Concept (Row) Generalizations':
+    if tab_name == consts.CONCEPT_GENERALIZATIONS_TAB_NAME:
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_ROW_GENERALIZATIONS)
         group_by = 3 if group_by is None else group_by
-    elif tab_name == 'Concept (Row) Suppressions':
+    elif tab_name == consts.CONCEPT_SUPPRESSIONS_TAB_NAME:
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_ROW_SUPPRESSIONS)
         group_by = 3 if group_by is None else group_by
-    elif tab_name == 'Field (Column) Generalizations':
+    elif tab_name == consts.FIELD_GENERALIZATIONS_TAB_NAME:
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_COL_GENERALIZATIONS)
         group_by = 1 if group_by is None else group_by
-    elif tab_name == 'Field (Column) Suppressions':
+    elif tab_name == consts.FIELD_SUPPRESSIONS_TAB_NAME:
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_COL_SUPPRESSIONS)
         group_by = 1 if group_by is None else group_by
-    elif tab_name == 'Available Fields':
+    elif tab_name == consts.AVAILABLE_FIELDS_TAB_NAME:
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_AVAILABLE_FIELDS_VALUES)
         group_by = 1 if group_by is None else group_by
-    elif tab_name == 'Table Suppressions':
+    elif tab_name == consts.TABLE_SUPPRESSIONS_TAB_NAME:
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_TABLE_SUPPRESSIONS)
         group_by = 0 if group_by is None else group_by
-    elif tab_name == 'Change Log':
+    elif tab_name == consts.CHANGE_LOG_TAB_NAME:
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_CHANGE_LOG_VALUES)
         group_by = 0 if group_by is None else group_by
-    elif tab_name == 'Cleaning & Conformance':
+    elif tab_name == consts.CLEANING_CONFORMANCE_TAB_NAME:
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_CLEAN_CONFORM_VALUES)
         group_by = 0 if group_by is None else group_by
-    elif tab_name == consts.PROGRAM_CUSTOM_CONCEPT_IDS:
+    elif tab_name == consts.PROGRAM_CUSTOM_CONCEPT_IDS_TAB_NAME:
         fields, values_list = sequentially_process_tab_contents(values, consts.INIT_CUSTOM_CONCEPTS)
+        group_by = 0 if group_by is None else group_by
+    elif tab_name == consts.WEARABLES_TAB_NAME:
+        fields, values_list = sequentially_process_tab_contents(values, consts.INIT_WEARABLES)
         group_by = 0 if group_by is None else group_by
     else:
         fields, values_list = sequentially_process_tab_contents(values, {})
@@ -525,6 +487,7 @@ def main(raw_args=None):
     formulas = service.read_sheet_values(dd_values_service, args, render_option='FORMULA')
 
     values = merge_values_and_formulas(values, formulas)
+
 
     # read the meta data
     mdata = service.read_meta_data(dd_meta_service, args)

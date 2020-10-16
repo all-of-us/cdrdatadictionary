@@ -90,7 +90,7 @@ concept_gen_item:
     source_ppi_module: any(list(str()), str(), null())
     transformation_applied_in_registered_tier: any(list(str()), str(), null())
     registered_tier_transformation_description: any(list(str()), str(), null())
-    fields_affected: any(list(str()), str(), null(), required=False)
+    fields_affected: any(list(str()), str(), required=False)
     input_concept_id: any(url(), list(url()), list(int()), int(), null(), required=False)
     input_concept_name: any(list(str()), str(), null(), required=False)
     generalized_output_concept_id: any(list(int()), int(), null(), required=False)
